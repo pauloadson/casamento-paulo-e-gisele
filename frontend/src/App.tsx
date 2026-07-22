@@ -50,8 +50,10 @@ function App() {
     setStatus('loading');
     
     try {
-      // Configurar a URL da API do backend
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      // Configurar a URL da API do backend removendo barras extras no final
+      const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = rawUrl.replace(/\/+$/, '');
+      
       const response = await fetch(`${apiUrl}/guests`, {
         method: 'POST',
         headers: {
