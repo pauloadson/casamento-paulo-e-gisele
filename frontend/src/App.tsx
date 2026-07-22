@@ -166,7 +166,7 @@ function App() {
         </div>
 
         <button type="submit" disabled={status === 'loading'}>
-          {status === 'loading' ? 'Enviando...' : 'Confirmar Presença'}
+          {status === 'loading' ? 'Enviando...' : 'Salvar'}
         </button>
       </form>
     </div>
