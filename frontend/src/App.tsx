@@ -88,7 +88,7 @@ function App() {
   return (
     <div className="rsvp-container">
       <h1>Paulo & Gisele</h1>
-      <p className="subtitle">Confirme sua presença no nosso grande dia</p>
+      <p className="subtitle">Confirme sua presença conosco!</p>
 
       {status === 'success' && (
         <div className="alert success">
