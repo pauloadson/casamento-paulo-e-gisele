@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { GuestService } from './guest.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('guests')
 export class GuestController {
@@ -10,6 +11,7 @@ export class GuestController {
     return this.guestService.create(body);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll() {
     return this.guestService.findAll();
