@@ -1,0 +1,209 @@
+:root {
+  --font-family: 'Inter', system-ui, sans-serif;
+  
+  /* Romantic Premium Palette - White & Pastel Green */
+  --color-primary: #86A789; /* Elegant pastel green */
+  --color-secondary: #D2E3C6;
+  --color-accent: #739072;
+  --color-background: #FFFFFF;
+  --color-surface: rgba(255, 255, 255, 0.75); 
+  --color-text-main: #2C362A;
+  --color-text-light: #526350;
+  --color-border: rgba(134, 167, 137, 0.3);
+  
+  --shadow-premium: 0 10px 40px -10px rgba(134, 167, 137, 0.25);
+  --shadow-hover: 0 16px 50px -12px rgba(134, 167, 137, 0.35);
+  
+  --radius-lg: 24px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: #FAFAFA;
+  /* Textura de papel fino com efeito aquarela floral (Premium Wedding Style) */
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(134, 167, 137, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 85% 15%, rgba(210, 227, 198, 0.18) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(134, 167, 137, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(115, 144, 114, 0.1) 0%, transparent 45%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  color: var(--color-text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  overflow-x: hidden;
+}
+
+/* Typography */
+h1 {
+  font-family: 'Playfair Display', serif; /* A nice serif font for weddings */
+  font-weight: 600;
+  font-size: 2.8rem;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+  text-align: center;
+  letter-spacing: -0.5px;
+}
+
+p.subtitle {
+  text-align: center;
+  color: var(--color-text-light);
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+/* Glassmorphism Container */
+.rsvp-container {
+  background: var(--color-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: var(--shadow-premium);
+  border-radius: var(--radius-lg);
+  padding: 3rem;
+  width: 100%;
+  max-width: 500px;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.rsvp-container:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin-bottom: 0.6rem;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.95);
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--color-text-main);
+  transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(134, 167, 137, 0.2);
+  background: #FFFFFF;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Radio/Checkbox custom */
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--color-text-main);
+}
+
+.radio-option input[type="radio"] {
+  width: auto;
+  accent-color: var(--color-primary);
+  transform: scale(1.3);
+  cursor: pointer;
+}
+
+/* Button */
+button {
+  width: 100%;
+  padding: 1.1rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(134, 167, 137, 0.35);
+  margin-top: 1rem;
+  letter-spacing: 0.5px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(134, 167, 137, 0.5);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Alerts / States */
+.alert {
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+.alert.success {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+}
+
+.alert.error {
+  background: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #FFCDD2;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
