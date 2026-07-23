@@ -78,8 +78,36 @@ export default function Gifts() {
   const handleSendWhatsApp = (contact: 'noivo' | 'noiva') => {
     const phone = contact === 'noivo' ? '556295132226' : '556295288086';
     const greeting = contact === 'noivo' ? 'Olá, Paulo!' : 'Olá, Gisele!';
-    const text = `${greeting} Gostaria de presentear vocês com o(s) seguinte(s) item(ns) da lista de casamento:\n\n${selectedItems.map(item => `- ${item}`).join('\n')}`;
-    const encodedText = encodeURIComponent(text);
+    
+    // Group items by category
+    const groupedItems: Record<string, string[]> = {};
+    selectedItems.forEach(item => {
+      const category = categories.find(cat => cat.items.includes(item));
+      if (category) {
+        if (!groupedItems[category.name]) {
+          groupedItems[category.name] = [];
+        }
+        groupedItems[category.name].push(item);
+      }
+    });
+
+    let itemsText = '';
+    Object.keys(groupedItems).forEach(catName => {
+      itemsText += `*${catName.toUpperCase()}*\n`;
+      groupedItems[catName].forEach(item => {
+        itemsText += `- ${item}\n`;
+      });
+      itemsText += '\n';
+    });
+
+    const isPlural = selectedItems.length > 1;
+    const introText = isPlural 
+      ? 'com os seguintes itens'
+      : 'com o seguinte item';
+
+    const text = `${greeting} Gostaria de presentear vocês ${introText} da lista de casamento:\n\n${itemsText.trim()}`;
+    // encodeURIComponent não encoda asteriscos por padrão, o que pode bugar o redirecionamento do WhatsApp em alguns celulares.
+    const encodedText = encodeURIComponent(text).replace(/\*/g, '%2A');
     window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
   };
 
