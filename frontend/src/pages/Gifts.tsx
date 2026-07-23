@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Gift, X, Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box } from 'lucide-react';
-import './GiftList.css';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, MessageCircle } from 'lucide-react';
+import './Gifts.css';
 
 const categories = [
   {
@@ -63,36 +64,39 @@ const categories = [
   }
 ];
 
-export function GiftList() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Gifts() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(categories[0].name);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const toggleItem = (item: string) => {
+    setSelectedItems(prev => 
+      prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+    );
+  };
+
+  const handleSendWhatsApp = (contact: 'noivo' | 'noiva') => {
+    const phone = contact === 'noivo' ? '556295132226' : '556295288086';
+    const greeting = contact === 'noivo' ? 'Olá, Paulo!' : 'Olá, Gisele!';
+    const text = `${greeting} Gostaria de presentear vocês com o(s) seguinte(s) item(ns) da lista de casamento:\n\n${selectedItems.map(item => `- ${item}`).join('\n')}`;
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://wa.me/${phone}?text=${encodedText}`, '_blank');
+  };
 
   return (
-    <>
-      <button 
-        className="floating-gift-button"
-        onClick={() => setIsOpen(true)}
-        aria-label="Abrir Lista de Presentes"
-      >
-        <Gift className="gift-icon" />
-        <span className="gift-text">
-          Lista de <br className="mobile-break" /> Presentes
-        </span>
-      </button>
-
-      {isOpen && (
-        <div className="gift-modal-overlay" onClick={() => setIsOpen(false)}>
-          <div className="gift-modal-content" onClick={e => e.stopPropagation()}>
-            <div className="gift-modal-header">
-              <h2>Nossa Lista de Sugestões</h2>
-              <button 
-                className="close-button" 
-                onClick={() => setIsOpen(false)}
-                aria-label="Fechar"
-              >
-                <X size={24} />
-              </button>
-            </div>
+    <div className="gifts-page">
+      <div className="gift-modal-content" onClick={e => e.stopPropagation()}>
+        <div className="gift-modal-header">
+          <button 
+            className="close-button" 
+            onClick={() => navigate('/')}
+            aria-label="Voltar"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <h2>Nossa Lista de Sugestões</h2>
+          <div style={{ width: 24 }}></div>
+        </div>
             
             <p className="gift-modal-subtitle">
               Sua presença é nosso maior presente! Mas se desejar nos presentear, aqui estão algumas sugestões.
@@ -119,7 +123,11 @@ export function GiftList() {
                     className={`gift-items-grid ${activeTab === cat.name ? 'active' : ''}`}
                   >
                     {cat.items.map((item, idx) => (
-                      <div key={idx} className="gift-item">
+                      <div 
+                        key={idx} 
+                        className={`gift-item ${selectedItems.includes(item) ? 'selected' : ''}`}
+                        onClick={() => toggleItem(item)}
+                      >
                         {item}
                       </div>
                     ))}
@@ -127,9 +135,24 @@ export function GiftList() {
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-      )}
-    </>
+
+            {selectedItems.length > 0 && (
+              <div className="gift-modal-footer">
+                <p>
+                  Você selecionou <strong>{selectedItems.length}</strong> {selectedItems.length === 1 ? 'item' : 'itens'}. 
+                  Avisar:
+                </p>
+                <div className="whatsapp-buttons">
+                  <button className="whatsapp-btn" onClick={() => handleSendWhatsApp('noiva')}>
+                    <MessageCircle size={18} /> Noiva
+                  </button>
+                  <button className="whatsapp-btn" onClick={() => handleSendWhatsApp('noivo')}>
+                    <MessageCircle size={18} /> Noivo
+                  </button>
+                </div>
+              </div>
+            )}
+      </div>
+    </div>
   );
 }

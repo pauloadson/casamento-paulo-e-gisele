@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { GiftList } from '../components/GiftList';
+import { useNavigate } from 'react-router-dom';
+import { Gift } from 'lucide-react';
+import './Gifts.css';
 
 function RSVP() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -170,7 +173,17 @@ function RSVP() {
         </button>
       </form>
     </div>
-    <GiftList />
+    
+    <button 
+      className="floating-gift-button"
+      onClick={() => navigate('/presentes')}
+      aria-label="Abrir Lista de Presentes"
+    >
+      <Gift className="gift-icon" />
+      <span className="gift-text">
+        Lista de <br className="mobile-break" /> Presentes
+      </span>
+    </button>
     </>
   );
 }
