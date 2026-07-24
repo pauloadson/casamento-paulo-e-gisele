@@ -27,34 +27,34 @@ function Login() {
   };
 
   return (
-    <div className="rsvp-container" style={{ position: 'relative' }}>
-      <button 
-        onClick={() => navigate('/')}
-        style={{ 
-          position: 'absolute', 
-          top: '2rem', 
-          left: '2rem', 
-          background: 'transparent', 
-          border: 'none', 
-          cursor: 'pointer', 
-          color: 'var(--color-primary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0.5rem',
-          borderRadius: '50%',
-          transition: 'all 0.2s ease'
-        }}
-        aria-label="Voltar"
-        onMouseOver={(e) => {
-          e.currentTarget.style.background = 'rgba(134, 167, 137, 0.1)';
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.background = 'transparent';
-        }}
-      >
-        <ArrowLeft size={24} />
-      </button>
+    <div className="rsvp-container">
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '-1rem' }}>
+        <button 
+          onClick={() => navigate('/')}
+          style={{ 
+            background: 'transparent', 
+            border: 'none', 
+            cursor: 'pointer', 
+            color: 'var(--color-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0.5rem',
+            borderRadius: '50%',
+            transition: 'all 0.2s ease',
+            marginLeft: '-0.5rem'
+          }}
+          aria-label="Voltar"
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = 'rgba(134, 167, 137, 0.1)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = 'transparent';
+          }}
+        >
+          <ArrowLeft size={24} />
+        </button>
+      </div>
       <h1>Login</h1>
       {error && <div className="alert error">{error}</div>}
       <form onSubmit={handleLogin}>
