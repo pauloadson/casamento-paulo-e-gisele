@@ -28,7 +28,7 @@ function Login() {
 
   return (
     <div className="rsvp-container">
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '-1rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 0 }}>
         <button 
           onClick={() => navigate('/')}
           style={{ 
