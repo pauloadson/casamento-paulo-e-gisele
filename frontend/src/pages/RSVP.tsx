@@ -90,7 +90,7 @@ function RSVP() {
   return (
     <>
     <div className="rsvp-container">
-      <h1>Paulo & Gisele</h1>
+      <h1>Gisele & Paulo</h1>
       <p className="subtitle">Confirme sua presença conosco!</p>
 
       {status === 'success' && (
