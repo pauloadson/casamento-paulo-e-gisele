@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 
 function Login() {
@@ -26,7 +27,34 @@ function Login() {
   };
 
   return (
-    <div className="rsvp-container">
+    <div className="rsvp-container" style={{ position: 'relative' }}>
+      <button 
+        onClick={() => navigate('/')}
+        style={{ 
+          position: 'absolute', 
+          top: '2rem', 
+          left: '2rem', 
+          background: 'transparent', 
+          border: 'none', 
+          cursor: 'pointer', 
+          color: 'var(--color-primary)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0.5rem',
+          borderRadius: '50%',
+          transition: 'all 0.2s ease'
+        }}
+        aria-label="Voltar"
+        onMouseOver={(e) => {
+          e.currentTarget.style.background = 'rgba(134, 167, 137, 0.1)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.background = 'transparent';
+        }}
+      >
+        <ArrowLeft size={24} />
+      </button>
       <h1>Login</h1>
       {error && <div className="alert error">{error}</div>}
       <form onSubmit={handleLogin}>
