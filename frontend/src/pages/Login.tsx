@@ -28,33 +28,6 @@ function Login() {
 
   return (
     <div className="rsvp-container">
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 0 }}>
-        <button 
-          onClick={() => navigate('/')}
-          style={{ 
-            background: 'transparent', 
-            border: 'none', 
-            cursor: 'pointer', 
-            color: 'var(--color-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0.5rem',
-            borderRadius: '50%',
-            transition: 'all 0.2s ease',
-            marginLeft: '-0.5rem'
-          }}
-          aria-label="Voltar"
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = 'rgba(134, 167, 137, 0.1)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
-          <ArrowLeft size={24} />
-        </button>
-      </div>
       <h1>Login</h1>
       {error && <div className="alert error">{error}</div>}
       <form onSubmit={handleLogin}>
@@ -66,7 +39,26 @@ function Login() {
           <label>Senha</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
         </div>
-        <button type="submit">Entrar</button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+          <button type="submit">Entrar</button>
+          <button 
+            type="button" 
+            onClick={() => navigate('/')}
+            style={{
+              background: 'transparent',
+              color: 'var(--color-text-main)',
+              border: '1px solid var(--color-border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              boxShadow: 'none'
+            }}
+          >
+            <ArrowLeft size={18} />
+            Voltar para o início
+          </button>
+        </div>
       </form>
     </div>
   );
