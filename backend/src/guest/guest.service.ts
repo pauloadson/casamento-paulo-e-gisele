@@ -88,4 +88,15 @@ export class GuestService {
       }
     });
   }
+
+  async remove(id: number) {
+    // Remove os registros de auditoria vinculados antes de deletar o convidado
+    await this.prisma.auditLog.deleteMany({
+      where: { guestId: id },
+    });
+
+    return this.prisma.guest.delete({
+      where: { id },
+    });
+  }
 }

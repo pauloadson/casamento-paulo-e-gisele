@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Trash2 } from 'lucide-react';
 
 interface Guest {
   id: number;
@@ -65,6 +66,32 @@ function Dashboard() {
     }
   };
 
+  const handleDeleteGuest = async (id: number, name: string) => {
+    if (!window.confirm(`Tem certeza que deseja excluir o registro de "${name}"?`)) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = rawUrl.replace(/\/+$/, '');
+
+      await axios.delete(`${apiUrl}/guests/${id}`, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'x-api-key': import.meta.env.VITE_API_KEY || ''
+        }
+      });
+      setGuests(guests.filter(g => g.id !== id));
+    } catch (err) {
+      alert('Erro ao excluir convidado. Tente novamente.');
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -105,6 +132,7 @@ function Dashboard() {
                   <th>Telefone</th>
                   <th>Status</th>
                   <th>Mensagem</th>
+                  <th style={{ textAlign: 'center' }}>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -118,11 +146,21 @@ function Dashboard() {
                       </span>
                     </td>
                     <td>{g.message || '-'}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <button 
+                        type="button" 
+                        className="delete-btn" 
+                        onClick={() => handleDeleteGuest(g.id, g.name)}
+                        title="Excluir convidado"
+                      >
+                        <Trash2 size={16} /> Excluir
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {guests.length === 0 && (
                   <tr>
-                    <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
                       Nenhum convidado confirmou presença ainda.
                     </td>
                   </tr>
