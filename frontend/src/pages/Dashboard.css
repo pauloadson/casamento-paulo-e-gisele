@@ -263,6 +263,59 @@
   transform: translateY(-1px);
 }
 
+/* Modal de Dependentes - Botões Elegantes e Limpos */
+.modal-close-btn {
+  background: transparent !important;
+  border: none !important;
+  color: var(--color-text-light) !important;
+  cursor: pointer !important;
+  padding: 0.35rem !important;
+  width: auto !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease !important;
+  line-height: 1 !important;
+}
+
+.modal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: var(--color-text-main) !important;
+}
+
+.dep-add-btn {
+  background: #2C5E3B !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 0.75rem 1.25rem !important;
+  border-radius: var(--radius-sm) !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  margin-top: 0.75rem !important;
+  width: 100% !important;
+  box-shadow: 0 4px 12px rgba(44, 94, 59, 0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+.dep-add-btn:hover:not(:disabled) {
+  background: #1e4229 !important;
+  box-shadow: 0 6px 16px rgba(44, 94, 59, 0.35) !important;
+  transform: translateY(-1px);
+}
+
+.dep-add-btn:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
 @media (max-width: 600px) {
   .category-admin-card {
     padding: 1rem 0.75rem;

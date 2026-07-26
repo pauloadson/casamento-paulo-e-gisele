@@ -551,8 +551,8 @@ function Dashboard() {
             {searchQuery && (
               <button 
                 type="button" 
+                className="modal-close-btn"
                 onClick={() => setSearchQuery('')}
-                style={{ background: 'transparent', border: 'none', color: 'var(--color-text-light)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0.25rem' }}
                 title="Limpar busca"
               >
                 <X size={18} />
@@ -1076,7 +1076,12 @@ function Dashboard() {
                   Vincule familiares (ex: filhos sem celular, cônjuges) à este responsável.
                 </p>
               </div>
-              <button type="button" onClick={() => setDepModalGuest(null)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-light)', cursor: 'pointer', padding: '0.25rem' }}>
+              <button 
+                type="button" 
+                className="modal-close-btn" 
+                onClick={() => setDepModalGuest(null)}
+                title="Fechar"
+              >
                 <X size={22} />
               </button>
             </div>
@@ -1104,7 +1109,7 @@ function Dashboard() {
                         type="button"
                         onClick={() => handleUnlinkDependent(dep.id)}
                         disabled={actionLoading === `unlink-dep-${dep.id}`}
-                        style={{ background: '#FFEBEB', color: '#D32F2F', border: '1px solid #FFCDB2', padding: '0.35rem 0.65rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                        style={{ background: '#FFEBEB', color: '#D32F2F', border: '1px solid #FFCDB2', padding: '0.35rem 0.65rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', width: 'auto', margin: 0, boxShadow: 'none' }}
                         title="Desvincular dependente"
                       >
                         {actionLoading === `unlink-dep-${dep.id}` ? <Loader2 size={14} className="spinner" /> : <Trash2 size={14} />}
@@ -1154,9 +1159,9 @@ function Dashboard() {
                       </div>
                       <button 
                         type="button"
+                        className="dep-link-btn"
                         onClick={() => handleLinkDependent(res.id)}
                         disabled={actionLoading === `link-dep-${res.id}`}
-                        style={{ background: 'var(--color-primary)', color: '#fff', border: 'none', padding: '0.35rem 0.75rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                       >
                         {actionLoading === `link-dep-${res.id}` ? <Loader2 size={14} className="spinner" /> : '+ Vincular'}
                       </button>
@@ -1172,16 +1177,21 @@ function Dashboard() {
                 <button 
                   type="button" 
                   onClick={() => setShowQuickCreateDep(true)}
-                  style={{ background: 'transparent', border: '1px dashed var(--color-primary)', color: 'var(--color-primary-dark)', width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                  style={{ background: 'rgba(134, 167, 137, 0.08)', border: '1px dashed #2C5E3B', color: '#2C5E3B', width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', margin: 0, boxShadow: 'none', transition: 'all 0.2s' }}
                 >
                   <Plus size={18} /> Cadastrar Novo Dependente Sem Celular (Ex: Bebê)
                 </button>
               ) : (
                 <form onSubmit={handleQuickCreateDep} style={{ background: '#F9FCFA', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #D1E5D9' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <h5 style={{ margin: 0, fontSize: '0.9rem', color: '#2C5E3B' }}>✨ Novo Dependente para {depModalGuest.name}</h5>
-                    <button type="button" onClick={() => setShowQuickCreateDep(false)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-light)', cursor: 'pointer', padding: 0 }}>
-                      <X size={16} />
+                    <h5 style={{ margin: 0, fontSize: '0.95rem', color: '#2C5E3B', fontWeight: 700 }}>✨ Novo Dependente para {depModalGuest.name}</h5>
+                    <button 
+                      type="button" 
+                      className="modal-close-btn"
+                      onClick={() => setShowQuickCreateDep(false)}
+                      title="Cancelar"
+                    >
+                      <X size={18} />
                     </button>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -1207,10 +1217,14 @@ function Dashboard() {
                     </div>
                     <button 
                       type="submit" 
+                      className="dep-add-btn"
                       disabled={creatingDepLoading}
-                      style={{ background: 'var(--color-primary-dark)', color: '#fff', border: 'none', padding: '0.6rem 1rem', borderRadius: '6px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', marginTop: '0.25rem' }}
                     >
-                      {creatingDepLoading ? <Loader2 size={16} className="spinner" /> : 'Cadastrar e Vincular Agora'}
+                      {creatingDepLoading ? <Loader2 size={16} className="spinner" /> : (
+                        <>
+                          <Plus size={18} /> Adicionar
+                        </>
+                      )}
                     </button>
                   </div>
                 </form>
