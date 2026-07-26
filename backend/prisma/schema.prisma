@@ -37,3 +37,25 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model GiftCategory {
+  id        Int        @id @default(autoincrement())
+  name      String
+  icon      String     @default("Utensils")
+  sequence  Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  items     GiftItem[]
+}
+
+model GiftItem {
+  id          Int          @id @default(autoincrement())
+  categoryId  Int
+  name        String
+  isReceived  Boolean      @default(false)
+  givenBy     String?      @db.Text
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  category    GiftCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}

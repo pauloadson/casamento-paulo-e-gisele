@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Trash2 } from 'lucide-react';
+import { 
+  Trash2, Plus, Edit2, ArrowUp, ArrowDown, Check, X, Gift, 
+  Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, User, Loader2,
+  ChevronUp, ChevronDown, Minimize2, Maximize2
+} from 'lucide-react';
+import './Dashboard.css';
 
 interface Guest {
   id: number;
@@ -11,58 +16,141 @@ interface Guest {
   message: string;
 }
 
+interface GiftItemData {
+  id: number;
+  categoryId: number;
+  name: string;
+  isReceived: boolean;
+  givenBy?: string | null;
+}
+
+interface GiftCategoryData {
+  id: number;
+  name: string;
+  icon: string;
+  sequence: number;
+  items: GiftItemData[];
+}
+
 function Dashboard() {
   const [guests, setGuests] = useState<Guest[]>([]);
+  const [categories, setCategories] = useState<GiftCategoryData[]>([]);
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'guests' | 'register'>('guests');
+  const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts'>('guests');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchGuests = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/login');
-          return;
-        }
+  // Loading states
+  const [loadingGuests, setLoadingGuests] = useState(true);
+  const [loadingGifts, setLoadingGifts] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-        const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-        const apiUrl = rawUrl.replace(/\/+$/, '');
-        
-        const response = await axios.get(`${apiUrl}/guests`, {
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'x-api-key': import.meta.env.VITE_API_KEY || ''
-          }
-        });
-        setGuests(response.data);
-      } catch (err) {
-        navigate('/login');
-      }
+  // State for inline editing in Gifts tab
+  const [editingCatId, setEditingCatId] = useState<number | null>(null);
+  const [editingCatName, setEditingCatName] = useState('');
+  
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [editingItemName, setEditingItemName] = useState('');
+
+  // State for marking received / editing who gave item
+  const [receivingItemId, setReceivingItemId] = useState<number | null>(null);
+  const [givenByInput, setGivenByInput] = useState('');
+
+  // State for adding new item
+  const [addingItemToCatId, setAddingItemToCatId] = useState<number | null>(null);
+  const [newItemName, setNewItemName] = useState('');
+
+  // State for adding new category
+  const [isAddingCat, setIsAddingCat] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatIcon, setNewCatIcon] = useState('Box');
+
+  // State and helpers for minimizing categories
+  const [minimizedCatIds, setMinimizedCatIds] = useState<number[]>([]);
+
+  const toggleMinimizeCat = (catId: number) => {
+    setMinimizedCatIds(prev => 
+      prev.includes(catId) ? prev.filter(id => id !== catId) : [...prev, catId]
+    );
+  };
+
+  const handleMinimizeAll = () => {
+    setMinimizedCatIds(categories.map(c => c.id));
+  };
+
+  const handleExpandAll = () => {
+    setMinimizedCatIds([]);
+  };
+
+  useEffect(() => {
+    document.body.classList.add('dashboard-active');
+    return () => {
+      document.body.classList.remove('dashboard-active');
     };
+  }, []);
+
+  const getApiHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+      Authorization: `Bearer ${token}`,
+      'x-api-key': import.meta.env.VITE_API_KEY || ''
+    };
+  };
+
+  const getApiUrl = () => {
+    const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    return rawUrl.replace(/\/+$/, '');
+  };
+
+  const fetchGuests = async () => {
+    setLoadingGuests(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      const response = await axios.get(`${getApiUrl()}/guests`, { headers: getApiHeaders() });
+      setGuests(response.data);
+    } catch (err) {
+      navigate('/login');
+    } finally {
+      setLoadingGuests(false);
+    }
+  };
+
+  const fetchGifts = async () => {
+    setLoadingGifts(true);
+    try {
+      const response = await axios.get(`${getApiUrl()}/gifts`, { headers: getApiHeaders() });
+      setCategories(response.data);
+    } catch (err) {
+      console.error('Erro ao buscar presentes:', err);
+    } finally {
+      setLoadingGifts(false);
+    }
+  };
+
+  useEffect(() => {
     fetchGuests();
+    fetchGifts();
   }, [navigate]);
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    setActionLoading('create-user');
     try {
-      const token = localStorage.getItem('token');
-      const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const apiUrl = rawUrl.replace(/\/+$/, '');
-      
-      await axios.post(`${apiUrl}/users`, { username: newUsername, password: newPassword }, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'x-api-key': import.meta.env.VITE_API_KEY || ''
-        }
+      await axios.post(`${getApiUrl()}/users`, { username: newUsername, password: newPassword }, {
+        headers: getApiHeaders()
       });
       setMessage('Usuário criado com sucesso!');
       setNewUsername('');
       setNewPassword('');
     } catch (err) {
       setMessage('Erro ao criar usuário.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -70,31 +158,165 @@ function Dashboard() {
     if (!window.confirm(`Tem certeza que deseja excluir o registro de "${name}"?`)) {
       return;
     }
+    setActionLoading(`delete-guest-${id}`);
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-
-      const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const apiUrl = rawUrl.replace(/\/+$/, '');
-
-      await axios.delete(`${apiUrl}/guests/${id}`, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'x-api-key': import.meta.env.VITE_API_KEY || ''
-        }
-      });
+      await axios.delete(`${getApiUrl()}/guests/${id}`, { headers: getApiHeaders() });
       setGuests(guests.filter(g => g.id !== id));
     } catch (err) {
       alert('Erro ao excluir convidado. Tente novamente.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     navigate('/login');
+  };
+
+  const renderCategoryIcon = (iconName?: string) => {
+    switch (iconName) {
+      case 'Utensils': return <Utensils size={20} />;
+      case 'Coffee': return <Coffee size={20} />;
+      case 'Tv': return <Tv size={20} />;
+      case 'BedDouble': return <BedDouble size={20} />;
+      case 'Bath': return <Bath size={20} />;
+      case 'WashingMachine': return <WashingMachine size={20} />;
+      case 'Box': default: return <Box size={20} />;
+    }
+  };
+
+  // Category sequence movement
+  const handleMoveCategory = async (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= categories.length) return;
+
+    const currentCat = categories[index];
+    const targetCat = categories[targetIndex];
+
+    const newOrder = [
+      { id: currentCat.id, sequence: targetCat.sequence },
+      { id: targetCat.id, sequence: currentCat.sequence }
+    ];
+
+    setActionLoading(`move-${direction}-${currentCat.id}`);
+    try {
+      const res = await axios.put(`${getApiUrl()}/gifts/categories/reorder`, { order: newOrder }, { headers: getApiHeaders() });
+      setCategories(res.data);
+    } catch (err) {
+      alert('Erro ao reordenar categorias.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Create category
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+    setActionLoading('create-cat');
+    try {
+      await axios.post(`${getApiUrl()}/gifts/categories`, { name: newCatName, icon: newCatIcon }, { headers: getApiHeaders() });
+      setNewCatName('');
+      setIsAddingCat(false);
+      await fetchGifts();
+    } catch (err) {
+      alert('Erro ao criar categoria.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Update category name
+  const handleSaveCategoryName = async (id: number) => {
+    if (!editingCatName.trim()) return;
+    setActionLoading(`save-cat-${id}`);
+    try {
+      await axios.put(`${getApiUrl()}/gifts/categories/${id}`, { name: editingCatName }, { headers: getApiHeaders() });
+      setEditingCatId(null);
+      await fetchGifts();
+    } catch (err) {
+      alert('Erro ao atualizar categoria.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Delete category
+  const handleDeleteCategory = async (id: number, name: string) => {
+    if (!window.confirm(`Tem certeza que deseja excluir a categoria "${name}" e todos os seus itens?`)) return;
+    setActionLoading(`del-cat-${id}`);
+    try {
+      await axios.delete(`${getApiUrl()}/gifts/categories/${id}`, { headers: getApiHeaders() });
+      await fetchGifts();
+    } catch (err) {
+      alert('Erro ao excluir categoria.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Create gift item
+  const handleCreateItem = async (categoryId: number) => {
+    if (!newItemName.trim()) return;
+    setActionLoading(`create-item-${categoryId}`);
+    try {
+      await axios.post(`${getApiUrl()}/gifts/items`, { categoryId, name: newItemName }, { headers: getApiHeaders() });
+      setNewItemName('');
+      setAddingItemToCatId(null);
+      await fetchGifts();
+    } catch (err) {
+      alert('Erro ao adicionar item.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Update item name
+  const handleSaveItemName = async (id: number) => {
+    if (!editingItemName.trim()) return;
+    setActionLoading(`save-item-${id}`);
+    try {
+      await axios.put(`${getApiUrl()}/gifts/items/${id}`, { name: editingItemName }, { headers: getApiHeaders() });
+      setEditingItemId(null);
+      await fetchGifts();
+    } catch (err) {
+      alert('Erro ao atualizar item.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Delete item
+  const handleDeleteItem = async (id: number, name: string) => {
+    if (!window.confirm(`Tem certeza que deseja excluir o item "${name}"?`)) return;
+    setActionLoading(`del-item-${id}`);
+    try {
+      await axios.delete(`${getApiUrl()}/gifts/items/${id}`, { headers: getApiHeaders() });
+      await fetchGifts();
+    } catch (err) {
+      alert('Erro ao excluir item.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Toggle received status / Save givenBy
+  const handleSaveReceivedStatus = async (item: GiftItemData, isReceived: boolean, givenBy?: string | null) => {
+    setActionLoading(`received-item-${item.id}`);
+    try {
+      await axios.put(`${getApiUrl()}/gifts/items/${item.id}`, {
+        isReceived,
+        givenBy: isReceived ? (givenBy || null) : null
+      }, { headers: getApiHeaders() });
+      setReceivingItemId(null);
+      setGivenByInput('');
+      await fetchGifts();
+    } catch (err) {
+      alert('Erro ao atualizar status do item.');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   return (
@@ -109,7 +331,14 @@ function Dashboard() {
           className={`tab-button ${activeTab === 'guests' ? 'active' : ''}`}
           onClick={() => setActiveTab('guests')}
         >
-          Lista de Presença
+          Lista de Presença ({guests.length})
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'gifts' ? 'active' : ''}`}
+          onClick={() => setActiveTab('gifts')}
+        >
+          <Gift size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }} />
+          Lista de Presentes
         </button>
         <button 
           className={`tab-button ${activeTab === 'register' ? 'active' : ''}`}
@@ -124,50 +353,361 @@ function Dashboard() {
 
       {activeTab === 'guests' && (
         <section className="fade-in">
-          <div className="table-wrapper">
-            <table className="modern-table">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Telefone</th>
-                  <th>Status</th>
-                  <th>Mensagem</th>
-                  <th style={{ textAlign: 'center' }}>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {guests.map(g => (
-                  <tr key={g.id}>
-                    <td>{g.name}</td>
-                    <td>{g.phone || '-'}</td>
-                    <td>
-                      <span className={`badge ${g.isConfirmed ? 'confirmed' : 'pending'}`}>
-                        {g.isConfirmed ? 'Confirmado' : 'Não'}
-                      </span>
-                    </td>
-                    <td>{g.message || '-'}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button 
-                        type="button" 
-                        className="delete-btn" 
-                        onClick={() => handleDeleteGuest(g.id, g.name)}
-                        title="Excluir convidado"
-                      >
-                        <Trash2 size={16} /> Excluir
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {guests.length === 0 && (
+          {loadingGuests ? (
+            <div className="loading-state">
+              <Loader2 size={36} className="spinner" style={{ color: 'var(--color-primary)' }} />
+              <span>Carregando lista de convidados...</span>
+            </div>
+          ) : (
+            <div className="table-wrapper">
+              <table className="modern-table">
+                <thead>
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
-                      Nenhum convidado confirmou presença ainda.
-                    </td>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Status</th>
+                    <th>Mensagem</th>
+                    <th style={{ textAlign: 'center' }}>Ações</th>
                   </tr>
+                </thead>
+                <tbody>
+                  {guests.map(g => (
+                    <tr key={g.id}>
+                      <td>{g.name}</td>
+                      <td>{g.phone || '-'}</td>
+                      <td>
+                        <span className={`badge ${g.isConfirmed ? 'confirmed' : 'pending'}`}>
+                          {g.isConfirmed ? 'Confirmado' : 'Não'}
+                        </span>
+                      </td>
+                      <td>{g.message || '-'}</td>
+                      <td style={{ textAlign: 'center' }}>
+                        <button 
+                          type="button" 
+                          className="delete-btn" 
+                          onClick={() => handleDeleteGuest(g.id, g.name)}
+                          disabled={actionLoading === `delete-guest-${g.id}`}
+                          title="Excluir convidado"
+                        >
+                          {actionLoading === `delete-guest-${g.id}` ? (
+                            <Loader2 size={16} className="spinner" />
+                          ) : (
+                            <Trash2 size={16} />
+                          )} 
+                          Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {guests.length === 0 && (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
+                        Nenhum convidado confirmou presença ainda.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeTab === 'gifts' && (
+        <section className="fade-in dashboard-gifts">
+          {loadingGifts ? (
+            <div className="loading-state">
+              <Loader2 size={36} className="spinner" style={{ color: 'var(--color-primary)' }} />
+              <span>Carregando categorias e presentes do banco de dados...</span>
+            </div>
+          ) : (
+            <>
+              <div className="dashboard-actions-bar">
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button type="button" className="icon-btn" onClick={handleMinimizeAll} title="Minimizar todas as categorias">
+                    <Minimize2 size={16} /> Minimizar Todas
+                  </button>
+                  <button type="button" className="icon-btn" onClick={handleExpandAll} title="Expandir todas as categorias">
+                    <Maximize2 size={16} /> Expandir Todas
+                  </button>
+                </div>
+
+                {!isAddingCat ? (
+                  <button className="add-category-btn" onClick={() => setIsAddingCat(true)}>
+                    <Plus size={18} /> Nova Categoria
+                  </button>
+                ) : (
+                  <form onSubmit={handleCreateCategory} className="inline-edit-box" style={{ maxWidth: '500px', margin: '0 0 1rem auto' }}>
+                    <select 
+                      value={newCatIcon} 
+                      onChange={e => setNewCatIcon(e.target.value)}
+                      style={{ width: '130px', padding: '0.5rem' }}
+                    >
+                      <option value="Utensils">Talheres (Cozinha)</option>
+                      <option value="Coffee">Café (Eletros)</option>
+                      <option value="Tv">TV (Sala)</option>
+                      <option value="BedDouble">Cama (Quarto)</option>
+                      <option value="Bath">Banho (Banheiro)</option>
+                      <option value="WashingMachine">Máquina (Área)</option>
+                      <option value="Box">Caixa (Geral)</option>
+                    </select>
+                    <input 
+                      type="text" 
+                      placeholder="Nome da categoria..." 
+                      value={newCatName} 
+                      onChange={e => setNewCatName(e.target.value)} 
+                      autoFocus
+                      required
+                    />
+                    <button type="submit" className="icon-btn success" disabled={actionLoading === 'create-cat'} title="Salvar">
+                      {actionLoading === 'create-cat' ? <Loader2 size={16} className="spinner" /> : <Check size={18} />}
+                    </button>
+                    <button type="button" className="icon-btn" onClick={() => setIsAddingCat(false)} title="Cancelar"><X size={18} /></button>
+                  </form>
                 )}
-              </tbody>
-            </table>
-          </div>
+              </div>
+
+              {categories.map((cat, index) => {
+                const isMinimized = minimizedCatIds.includes(cat.id);
+                return (
+                  <div key={cat.id} className="category-admin-card">
+                    <div className={`category-admin-header ${isMinimized ? 'minimized' : ''}`}>
+                      <div className="category-admin-title">
+                        <button
+                          type="button"
+                          className="icon-btn"
+                          onClick={() => toggleMinimizeCat(cat.id)}
+                          title={isMinimized ? "Expandir categoria" : "Minimizar categoria"}
+                          style={{ border: 'none', padding: '0.2rem', background: 'transparent' }}
+                        >
+                          {isMinimized ? <ChevronDown size={20} style={{ color: 'var(--color-primary)' }} /> : <ChevronUp size={20} style={{ color: 'var(--color-primary)' }} />}
+                        </button>
+                        {renderCategoryIcon(cat.icon)}
+                        {editingCatId === cat.id ? (
+                          <div className="inline-edit-box">
+                            <input 
+                              type="text" 
+                              value={editingCatName} 
+                              onChange={e => setEditingCatName(e.target.value)}
+                              autoFocus
+                            />
+                            <button type="button" className="icon-btn success" disabled={actionLoading === `save-cat-${cat.id}`} onClick={() => handleSaveCategoryName(cat.id)}>
+                              {actionLoading === `save-cat-${cat.id}` ? <Loader2 size={16} className="spinner" /> : <Check size={16} />}
+                            </button>
+                            <button type="button" className="icon-btn" onClick={() => setEditingCatId(null)}><X size={16} /></button>
+                          </div>
+                        ) : (
+                          <>
+                            <h3 onClick={() => toggleMinimizeCat(cat.id)} style={{ cursor: 'pointer' }} title="Clique para minimizar ou expandir">
+                              {cat.name}
+                            </h3>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', fontWeight: 'normal', marginLeft: '0.25rem' }}>
+                              ({cat.items.length} {cat.items.length === 1 ? 'item' : 'itens'})
+                            </span>
+                            <button 
+                              type="button" 
+                              className="icon-btn" 
+                              onClick={() => { setEditingCatId(cat.id); setEditingCatName(cat.name); }}
+                              title="Editar nome da categoria"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="category-admin-controls">
+                        <span style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', marginRight: '0.5rem' }}>Ordem:</span>
+                        <button 
+                          type="button" 
+                          className="icon-btn" 
+                          onClick={() => handleMoveCategory(index, 'up')} 
+                          disabled={index === 0 || actionLoading === `move-up-${cat.id}`}
+                          title="Subir categoria"
+                        >
+                          {actionLoading === `move-up-${cat.id}` ? <Loader2 size={16} className="spinner" /> : <ArrowUp size={16} />} Subir
+                        </button>
+                        <button 
+                          type="button" 
+                          className="icon-btn" 
+                          onClick={() => handleMoveCategory(index, 'down')} 
+                          disabled={index === categories.length - 1 || actionLoading === `move-down-${cat.id}`}
+                          title="Descer categoria"
+                        >
+                          {actionLoading === `move-down-${cat.id}` ? <Loader2 size={16} className="spinner" /> : <ArrowDown size={16} />} Descer
+                        </button>
+                        
+                        <button 
+                          type="button" 
+                          className="icon-btn success" 
+                          style={{ marginLeft: '0.5rem' }}
+                          onClick={() => { 
+                            if (isMinimized) toggleMinimizeCat(cat.id);
+                            setAddingItemToCatId(cat.id); 
+                            setNewItemName(''); 
+                          }}
+                        >
+                          <Plus size={16} /> Item
+                        </button>
+                        <button 
+                          type="button" 
+                          className="icon-btn danger" 
+                          onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                          disabled={actionLoading === `del-cat-${cat.id}`}
+                          title="Excluir categoria"
+                        >
+                          {actionLoading === `del-cat-${cat.id}` ? <Loader2 size={16} className="spinner" /> : <Trash2 size={16} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {!isMinimized && (
+                      <>
+                        {addingItemToCatId === cat.id && (
+                          <div className="inline-edit-box" style={{ marginBottom: '1rem', background: '#F4F8F4' }}>
+                            <input 
+                              type="text" 
+                              placeholder="Nome do novo item..." 
+                              value={newItemName} 
+                              onChange={e => setNewItemName(e.target.value)}
+                              autoFocus
+                            />
+                            <button type="button" className="icon-btn success" disabled={actionLoading === `create-item-${cat.id}`} onClick={() => handleCreateItem(cat.id)}>
+                              {actionLoading === `create-item-${cat.id}` ? <Loader2 size={16} className="spinner" /> : <Check size={16} />}
+                            </button>
+                            <button type="button" className="icon-btn" onClick={() => setAddingItemToCatId(null)}><X size={16} /></button>
+                          </div>
+                        )}
+
+                        <div className="items-admin-list">
+                          {cat.items.map(item => (
+                            <div key={item.id} className={`item-admin-row ${item.isReceived ? 'is-received' : ''}`}>
+                              <div className="item-admin-info">
+                                {editingItemId === item.id ? (
+                                  <div className="inline-edit-box">
+                                    <input 
+                                      type="text" 
+                                      value={editingItemName} 
+                                      onChange={e => setEditingItemName(e.target.value)} 
+                                      autoFocus
+                                    />
+                                    <button type="button" className="icon-btn success" disabled={actionLoading === `save-item-${item.id}`} onClick={() => handleSaveItemName(item.id)}>
+                                      {actionLoading === `save-item-${item.id}` ? <Loader2 size={16} className="spinner" /> : <Check size={16} />}
+                                    </button>
+                                    <button type="button" className="icon-btn" onClick={() => setEditingItemId(null)}><X size={16} /></button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <span className="item-admin-name">{item.name}</span>
+                                    <button 
+                                      type="button" 
+                                      className="icon-btn" 
+                                      style={{ padding: '0.2rem 0.4rem', border: 'none' }}
+                                      onClick={() => { setEditingItemId(item.id); setEditingItemName(item.name); }}
+                                      title="Editar nome do item"
+                                    >
+                                      <Edit2 size={14} />
+                                    </button>
+                                  </>
+                                )}
+
+                                {item.isReceived && (
+                                  <span className="received-info-tag">
+                                    <User size={14} /> 
+                                    {item.givenBy ? `Recebido por: ${item.givenBy}` : 'Já recebido (Sem nome)'}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="item-admin-actions">
+                                {receivingItemId === item.id ? (
+                                  <div className="inline-edit-box" style={{ minWidth: '260px' }}>
+                                    <input 
+                                      type="text" 
+                                      placeholder="Quem deu? (Ex: Tios...)" 
+                                      value={givenByInput} 
+                                      onChange={e => setGivenByInput(e.target.value)}
+                                      autoFocus
+                                    />
+                                    <button 
+                                      type="button" 
+                                      className="icon-btn success" 
+                                      disabled={actionLoading === `received-item-${item.id}`}
+                                      onClick={() => handleSaveReceivedStatus(item, true, givenByInput)}
+                                      title="Salvar"
+                                    >
+                                      {actionLoading === `received-item-${item.id}` ? <Loader2 size={16} className="spinner" /> : <Check size={16} />}
+                                    </button>
+                                    <button 
+                                      type="button" 
+                                      className="icon-btn" 
+                                      onClick={() => setReceivingItemId(null)}
+                                      title="Cancelar"
+                                    >
+                                      <X size={16} />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    {!item.isReceived ? (
+                                      <button 
+                                        type="button" 
+                                        className="icon-btn success" 
+                                        disabled={actionLoading === `received-item-${item.id}`}
+                                        onClick={() => { setReceivingItemId(item.id); setGivenByInput(''); }}
+                                      >
+                                        {actionLoading === `received-item-${item.id}` ? <Loader2 size={16} className="spinner" /> : <Check size={16} />} Marcar como Recebido
+                                      </button>
+                                    ) : (
+                                      <>
+                                        <button 
+                                          type="button" 
+                                          className="icon-btn" 
+                                          disabled={actionLoading === `received-item-${item.id}`}
+                                          onClick={() => { setReceivingItemId(item.id); setGivenByInput(item.givenBy || ''); }}
+                                          title="Editar quem deu"
+                                        >
+                                          <Edit2 size={14} /> Quem Deu
+                                        </button>
+                                        <button 
+                                          type="button" 
+                                          className="icon-btn danger" 
+                                          disabled={actionLoading === `received-item-${item.id}`}
+                                          onClick={() => handleSaveReceivedStatus(item, false, null)}
+                                          title="Desmarcar como recebido"
+                                        >
+                                          {actionLoading === `received-item-${item.id}` ? <Loader2 size={16} className="spinner" /> : 'Desmarcar'}
+                                        </button>
+                                      </>
+                                    )}
+
+                                    <button 
+                                      type="button" 
+                                      className="icon-btn danger" 
+                                      disabled={actionLoading === `del-item-${item.id}`}
+                                      onClick={() => handleDeleteItem(item.id, item.name)}
+                                      title="Excluir item"
+                                    >
+                                      {actionLoading === `del-item-${item.id}` ? <Loader2 size={16} className="spinner" /> : <Trash2 size={16} />}
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                          {cat.items.length === 0 && (
+                            <p style={{ textAlign: 'center', color: 'var(--color-text-light)', padding: '1rem', fontStyle: 'italic' }}>
+                              Nenhum item nesta categoria.
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </>
+          )}
         </section>
       )}
 
@@ -184,7 +724,10 @@ function Dashboard() {
               <label>Senha</label>
               <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
             </div>
-            <button type="submit">Cadastrar</button>
+            <button type="submit" disabled={actionLoading === 'create-user'}>
+              {actionLoading === 'create-user' ? <Loader2 size={18} className="spinner" style={{ marginRight: '8px', verticalAlign: 'middle' }} /> : null}
+              Cadastrar
+            </button>
           </form>
         </section>
       )}

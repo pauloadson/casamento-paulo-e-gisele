@@ -213,9 +213,32 @@ button:disabled {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem 1rem;
+  color: var(--color-text-light);
+  font-weight: 500;
+  width: 100%;
+}
+
 /* Dashboard Specific */
 .dashboard-container {
-  max-width: 900px;
+  max-width: 1300px !important;
+  width: 96%;
 }
 
 /* Tabs */
@@ -457,5 +480,25 @@ button:disabled {
   
   .logout-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  body:has(.dashboard-container),
+  body.dashboard-active {
+    padding: 0 !important;
+    background: #FFFFFF !important;
+  }
+
+  .rsvp-container.dashboard-container {
+    margin: 0 !important;
+    padding: 1.25rem 0.75rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 100vh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #FFFFFF !important;
   }
 }
