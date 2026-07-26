@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Query } from '@nestjs/common';
 import { GuestService } from './guest.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -33,6 +33,12 @@ export class GuestController {
   @Delete(':id/dependents/:dependentId')
   async unlinkDependent(@Param('id') id: string, @Param('dependentId') dependentId: string) {
     return this.guestService.unlinkDependent(+id, +dependentId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() body: any) {
+    return this.guestService.update(+id, body);
   }
 
   @UseGuards(JwtAuthGuard)

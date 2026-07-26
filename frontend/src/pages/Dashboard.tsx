@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  Trash2, Plus, Edit2, ArrowUp, ArrowDown, Check, X, Gift, 
+  Trash2, Plus, Edit2, Edit, ArrowUp, ArrowDown, Check, X, Gift, 
   Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, User, Loader2,
   ChevronUp, ChevronDown, Minimize2, Maximize2, ArrowLeft, UserPlus, Search
 } from 'lucide-react';
@@ -74,6 +74,14 @@ function Dashboard() {
   // Search state for guests list (with debounce)
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
+  // Guest editing modal state
+  const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+  const [editGuestName, setEditGuestName] = useState('');
+  const [editGuestPhone, setEditGuestPhone] = useState('');
+  const [editGuestConfirmed, setEditGuestConfirmed] = useState(true);
+  const [editGuestMessage, setEditGuestMessage] = useState('');
+  const [savingGuestLoading, setSavingGuestLoading] = useState(false);
 
   // State for inline editing in Gifts tab
   const [editingCatId, setEditingCatId] = useState<number | null>(null);
@@ -228,6 +236,37 @@ function Dashboard() {
       alert('Erro ao excluir convidado. Tente novamente.');
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleOpenEditGuest = (guest: Guest) => {
+    setEditingGuest(guest);
+    setEditGuestName(guest.name || '');
+    setEditGuestPhone(guest.phone || '');
+    setEditGuestConfirmed(guest.isConfirmed);
+    setEditGuestMessage(guest.message || '');
+  };
+
+  const handleSaveEditGuest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGuest || !editGuestName.trim()) return;
+    setSavingGuestLoading(true);
+    try {
+      const payload = {
+        name: editGuestName.trim(),
+        phone: editGuestPhone.trim() || null,
+        isConfirmed: editGuestConfirmed,
+        message: editGuestMessage.trim() || null,
+      };
+      const res = await axios.put(`${getApiUrl()}/guests/${editingGuest.id}`, payload, { headers: getApiHeaders() });
+      setGuests(prev => prev.map(g => g.id === res.data.id ? res.data : g));
+      setEditingGuest(null);
+      setMessage('Convidado atualizado com sucesso!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao atualizar convidado.');
+    } finally {
+      setSavingGuestLoading(false);
     }
   };
 
@@ -498,14 +537,23 @@ function Dashboard() {
                       </td>
                       <td>{g.message || '-'}</td>
                       <td style={{ textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <button 
+                            type="button" 
+                            onClick={() => handleOpenEditGuest(g)}
+                            title="Editar dados do convidado"
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', background: '#F1F5F9', color: '#334155', border: '1px solid #CBD5E1', padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', height: '36px', minWidth: '115px' }}
+                          >
+                            <Edit size={15} />
+                            Editar
+                          </button>
                           <button 
                             type="button" 
                             onClick={() => navigate(`/admin/guests/${g.id}/dependents`)}
                             title="Gerenciar Dependentes"
-                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)', border: '1px solid var(--color-primary)', padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', height: '36px', minWidth: '125px' }}
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)', border: '1px solid var(--color-primary)', padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', height: '36px', minWidth: '115px' }}
                           >
-                            <UserPlus size={16} />
+                            <UserPlus size={15} />
                             + Dependentes
                           </button>
                           <button 
@@ -514,12 +562,12 @@ function Dashboard() {
                             onClick={() => handleDeleteGuest(g.id, g.name)}
                             disabled={actionLoading === `delete-guest-${g.id}`}
                             title="Excluir convidado"
-                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', height: '36px', minWidth: '125px', margin: 0 }}
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', height: '36px', minWidth: '115px', margin: 0 }}
                           >
                             {actionLoading === `delete-guest-${g.id}` ? (
-                              <Loader2 size={16} className="spinner" />
+                              <Loader2 size={15} className="spinner" />
                             ) : (
-                              <Trash2 size={16} />
+                              <Trash2 size={15} />
                             )} 
                             Excluir
                           </button>
@@ -951,6 +999,92 @@ function Dashboard() {
             </div>
           )}
         </section>
+      )}
+
+      {/* Modal de Editar Convidado */}
+      {editingGuest && (
+        <div className="modal-overlay" onClick={() => setEditingGuest(null)}>
+          <div className="dep-modal-content" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Edit size={22} /> Editar Convidado: {editingGuest.name}
+              </h3>
+              <button 
+                type="button" 
+                className="modal-close-btn" 
+                onClick={() => setEditingGuest(null)}
+                title="Fechar"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditGuest} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Nome Completo:</label>
+                <input 
+                  type="text" 
+                  required
+                  value={editGuestName} 
+                  onChange={e => setEditGuestName(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Telefone / Celular (ou em branco caso seja criança):</label>
+                <input 
+                  type="text" 
+                  value={editGuestPhone} 
+                  onChange={e => setEditGuestPhone(e.target.value)}
+                  placeholder="(11) 99999-9999"
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Status da Confirmação:</label>
+                <select
+                  value={editGuestConfirmed ? 'true' : 'false'}
+                  onChange={e => setEditGuestConfirmed(e.target.value === 'true')}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
+                >
+                  <option value="true">✅ Presença Confirmada</option>
+                  <option value="false">❌ Não Comparecerá</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Mensagem para os Noivos (Opcional):</label>
+                <textarea 
+                  rows={3}
+                  value={editGuestMessage} 
+                  onChange={e => setEditGuestMessage(e.target.value)}
+                  placeholder="Mensagem ou observação do convidado..."
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setEditingGuest(null)}
+                  style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', padding: '0.75rem 1.25rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="dep-add-btn"
+                  disabled={savingGuestLoading}
+                  style={{ width: 'auto', margin: 0 }}
+                >
+                  {savingGuestLoading ? <Loader2 size={18} className="spinner" /> : '💾 Salvar Alterações'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
     </div>

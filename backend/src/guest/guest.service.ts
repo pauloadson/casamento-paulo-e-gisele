@@ -179,6 +179,38 @@ export class GuestService {
     return updated;
   }
 
+  async update(id: number, data: any) {
+    const oldGuest = await this.prisma.guest.findUnique({ where: { id } });
+    const updated = await this.prisma.guest.update({
+      where: { id },
+      data: {
+        name: data.name,
+        phone: data.phone || null,
+        isConfirmed: Boolean(data.isConfirmed),
+        message: data.message || null,
+      },
+      include: {
+        auditLogs: true,
+        dependents: true,
+        parents: true,
+      },
+    });
+
+    if (oldGuest && oldGuest.isConfirmed !== Boolean(data.isConfirmed)) {
+      await this.prisma.auditLog.create({
+        data: {
+          guestId: id,
+          action: 'ADMIN_STATUS_UPDATE',
+          oldStatus: oldGuest.isConfirmed,
+          newStatus: Boolean(data.isConfirmed),
+        },
+      });
+    }
+
+    this.systemLogs.logAction('EDITAR_CONVIDADO', `Convidado '${updated.name}' editado pelo Admin`, 'admin');
+    return updated;
+  }
+
   async remove(id: number) {
     const g = await this.prisma.guest.findUnique({ where: { id } }).catch(() => null);
     this.systemLogs.logAction('EXCLUIR_CONVIDADO', `Convidado '${g?.name || id}' foi removido do sistema.`, 'admin');
