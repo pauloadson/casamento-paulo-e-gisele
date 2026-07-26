@@ -8,6 +8,19 @@ import {
 } from 'lucide-react';
 import './Dashboard.css';
 
+const isTokenValid = (token: string | null) => {
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 interface Guest {
   id: number;
   name: string;
@@ -107,13 +120,17 @@ function Dashboard() {
     setLoadingGuests(true);
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
+      if (!isTokenValid(token)) {
+        localStorage.removeItem('token');
         navigate('/login');
         return;
       }
       const response = await axios.get(`${getApiUrl()}/guests`, { headers: getApiHeaders() });
       setGuests(response.data);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('token');
+      }
       navigate('/login');
     } finally {
       setLoadingGuests(false);
