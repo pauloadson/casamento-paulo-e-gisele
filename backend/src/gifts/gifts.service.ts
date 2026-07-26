@@ -6,10 +6,14 @@ export class GiftsService implements OnModuleInit {
   constructor(private prisma: PrismaService) {}
 
   async onModuleInit() {
-    const count = await this.prisma.giftCategory.count();
-    if (count === 0) {
-      await this.seedDefaultGifts();
-      console.log('Default gift list seeded successfully into database.');
+    try {
+      const count = await this.prisma.giftCategory.count();
+      if (count === 0) {
+        await this.seedDefaultGifts();
+        console.log('Default gift list seeded successfully into database.');
+      }
+    } catch (error) {
+      console.warn('Could not check/seed default gift list during module init:', error.message);
     }
   }
 
