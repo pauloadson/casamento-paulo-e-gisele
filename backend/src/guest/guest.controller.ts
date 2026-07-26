@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, UseGuards, Query } from '@nestjs/common';
 import { GuestService } from './guest.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -13,8 +13,20 @@ export class GuestController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll() {
-    return this.guestService.findAll();
+  async findAll(@Query('search') search?: string) {
+    return this.guestService.findAll(search);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/dependents/:dependentId')
+  async linkDependent(@Param('id') id: string, @Param('dependentId') dependentId: string) {
+    return this.guestService.linkDependent(+id, +dependentId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/dependents/:dependentId')
+  async unlinkDependent(@Param('id') id: string, @Param('dependentId') dependentId: string) {
+    return this.guestService.unlinkDependent(+id, +dependentId);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SystemLogsService } from '../system-logs/system-logs.service';
 
@@ -13,14 +13,26 @@ export class GuestService {
     const statusMsg = data.isConfirmed ? 'CONFIRMOU presença!' : 'informou que NÃO poderá comparecer.';
     this.systemLogs.logAction('RSVP', `Convidado '${data.name}' ${statusMsg} (Tel: ${data.phone || 'Sem tel'})`, `Convidado: ${data.name}`);
 
+    const parentConnect = data.parentId
+      ? { connect: { id: Number(data.parentId) } }
+      : (data.parentIds && Array.isArray(data.parentIds)
+        ? { connect: data.parentIds.map((id: any) => ({ id: Number(id) })) }
+        : undefined);
+
     // Se não tiver telefone (o que é raro no nosso front), apenas cria
     if (!data.phone) {
       const guestWithoutPhone = await this.prisma.guest.create({
         data: {
           name: data.name,
-          phone: data.phone,
+          phone: data.phone || null,
           isConfirmed: data.isConfirmed,
           message: data.message,
+          parents: parentConnect,
+        },
+        include: {
+          dependents: true,
+          parents: true,
+          auditLogs: true,
         },
       });
       
@@ -48,6 +60,12 @@ export class GuestService {
           isConfirmed: data.isConfirmed,
           name: data.name, // atualiza o nome caso a pessoa tenha corrigido
           message: data.message, // atualiza a mensagem
+          parents: parentConnect,
+        },
+        include: {
+          dependents: true,
+          parents: true,
+          auditLogs: true,
         },
       });
 
@@ -73,6 +91,12 @@ export class GuestService {
         phone: data.phone,
         isConfirmed: data.isConfirmed,
         message: data.message,
+        parents: parentConnect,
+      },
+      include: {
+        dependents: true,
+        parents: true,
+        auditLogs: true,
       },
     });
 
@@ -88,12 +112,60 @@ export class GuestService {
     return newGuest;
   }
 
-  async findAll() {
+  async findAll(search?: string) {
     return this.prisma.guest.findMany({
+      where: search ? {
+        OR: [
+          { name: { contains: search } },
+          { phone: { contains: search } },
+        ],
+      } : undefined,
       include: {
-        auditLogs: true, // Inclui o histórico de alterações ao listar os convidados
-      }
+        auditLogs: true,
+        dependents: true,
+        parents: true,
+      },
+      orderBy: { name: 'asc' },
     });
+  }
+
+  async linkDependent(parentId: number, dependentId: number) {
+    if (parentId === dependentId) {
+      throw new BadRequestException('Um convidado não pode ser dependente de si mesmo.');
+    }
+    const updated = await this.prisma.guest.update({
+      where: { id: parentId },
+      data: {
+        dependents: {
+          connect: { id: dependentId },
+        },
+      },
+      include: {
+        auditLogs: true,
+        dependents: true,
+        parents: true,
+      },
+    });
+    this.systemLogs.logAction('VINCULAR_DEPENDENTE', `Convidado ID ${dependentId} vinculado como dependente de ID ${parentId}`, 'admin');
+    return updated;
+  }
+
+  async unlinkDependent(parentId: number, dependentId: number) {
+    const updated = await this.prisma.guest.update({
+      where: { id: parentId },
+      data: {
+        dependents: {
+          disconnect: { id: dependentId },
+        },
+      },
+      include: {
+        auditLogs: true,
+        dependents: true,
+        parents: true,
+      },
+    });
+    this.systemLogs.logAction('DESVINCULAR_DEPENDENTE', `Convidado ID ${dependentId} desvinculado de ID ${parentId}`, 'admin');
+    return updated;
   }
 
   async remove(id: number) {

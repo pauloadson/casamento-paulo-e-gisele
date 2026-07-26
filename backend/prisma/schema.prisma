@@ -17,6 +17,10 @@ model Guest {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   auditLogs         AuditLog[]
+
+  // Auto-relacionamento N:N para dependentes e responsáveis
+  parents           Guest[]  @relation("GuestDependents")
+  dependents        Guest[]  @relation("GuestDependents")
 }
 
 model AuditLog {
