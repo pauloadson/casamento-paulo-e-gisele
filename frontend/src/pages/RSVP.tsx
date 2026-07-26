@@ -54,7 +54,8 @@ function RSVP() {
     setStatus('loading');
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = rawUrl.replace(/\/+$/, '');
       const apiKey = import.meta.env.VITE_API_KEY || '';
       
       const res = await fetch(`${apiUrl}/guests`, {

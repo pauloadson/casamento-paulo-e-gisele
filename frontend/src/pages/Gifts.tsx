@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, MessageCircle, Loader2, Check } from 'lucide-react';
-import AdminShortcut from '../components/AdminShortcut';
 import './Gifts.css';
 
 interface GiftItemData {
@@ -117,9 +116,6 @@ export default function Gifts() {
 
   return (
     <div className="gifts-page" style={{ flexDirection: 'column', padding: '1rem' }}>
-      <div style={{ textAlign: 'center', width: '100%', marginBottom: '1rem', zIndex: 10, position: 'relative', flexShrink: 0 }}>
-        <AdminShortcut />
-      </div>
       <div className="gift-modal-content" onClick={e => e.stopPropagation()}>
         <div className="gift-modal-header">
           <button 
