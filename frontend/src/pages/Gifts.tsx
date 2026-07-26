@@ -50,6 +50,16 @@ export default function Gifts() {
     fetchGifts();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        navigate('/');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
+
   const renderCategoryIcon = (iconName?: string) => {
     switch (iconName) {
       case 'Utensils': return <Utensils size={20} />;
