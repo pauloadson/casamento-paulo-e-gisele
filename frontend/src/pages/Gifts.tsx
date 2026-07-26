@@ -116,7 +116,10 @@ export default function Gifts() {
   };
 
   return (
-    <div className="gifts-page">
+    <div className="gifts-page" style={{ flexDirection: 'column', padding: '1rem' }}>
+      <div style={{ textAlign: 'center', width: '100%', marginBottom: '1rem', zIndex: 10, position: 'relative', flexShrink: 0 }}>
+        <AdminShortcut />
+      </div>
       <div className="gift-modal-content" onClick={e => e.stopPropagation()}>
         <div className="gift-modal-header">
           <button 
@@ -128,9 +131,6 @@ export default function Gifts() {
           </button>
           <h2>Nossa Lista de Sugestões</h2>
           <div style={{ width: 24 }}></div>
-        </div>
-        <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
-          <AdminShortcut />
         </div>
         <p className="gift-modal-subtitle">
           Sua presença é nosso maior presente! Mas se desejar nos presentear, aqui estão algumas sugestões.

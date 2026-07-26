@@ -93,10 +93,10 @@ function RSVP() {
 
   return (
     <>
+    <div style={{ textAlign: 'center', width: '100%', padding: '1rem 0 0.5rem 0', position: 'relative', zIndex: 10 }}>
+      <AdminShortcut />
+    </div>
     <div className="rsvp-container">
-      <div style={{ textAlign: 'center' }}>
-        <AdminShortcut />
-      </div>
       <h1>Paulo & Gisele</h1>
       <p className="subtitle">Confirme sua presença conosco!</p>
 
