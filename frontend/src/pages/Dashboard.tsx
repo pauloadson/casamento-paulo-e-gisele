@@ -45,18 +45,28 @@ interface GiftCategoryData {
   items: GiftItemData[];
 }
 
+interface SystemLogData {
+  id: number;
+  action: string;
+  details: string;
+  performedBy: string;
+  createdAt: string;
+}
+
 function Dashboard() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [categories, setCategories] = useState<GiftCategoryData[]>([]);
+  const [systemLogs, setSystemLogs] = useState<SystemLogData[]>([]);
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts'>('guests');
+  const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts' | 'logs'>('guests');
   const navigate = useNavigate();
 
   // Loading states
   const [loadingGuests, setLoadingGuests] = useState(true);
   const [loadingGifts, setLoadingGifts] = useState(true);
+  const [loadingLogs, setLoadingLogs] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // State for inline editing in Gifts tab
@@ -149,9 +159,22 @@ function Dashboard() {
     }
   };
 
+  const fetchSystemLogs = async () => {
+    setLoadingLogs(true);
+    try {
+      const response = await axios.get(`${getApiUrl()}/system-logs`, { headers: getApiHeaders() });
+      setSystemLogs(response.data);
+    } catch (err) {
+      console.error('Erro ao buscar logs do sistema:', err);
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
   useEffect(() => {
     fetchGuests();
     fetchGifts();
+    fetchSystemLogs();
   }, [navigate]);
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -370,6 +393,15 @@ function Dashboard() {
           }}
         >
           Cadastrar Usuário
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'logs' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('logs');
+            fetchSystemLogs();
+          }}
+        >
+          📋 Histórico de Logs
         </button>
       </div>
 
@@ -751,6 +783,99 @@ function Dashboard() {
               Cadastrar
             </button>
           </form>
+        </section>
+      )}
+
+      {activeTab === 'logs' && (
+        <section className="fade-in">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h2 style={{ margin: 0 }}>📋 Tráfego e Histórico de Ações</h2>
+              <p style={{ margin: '0.3rem 0 0 0', color: 'var(--color-text-light)', fontSize: '0.9rem' }}>
+                Registro contínuo e completo de auditoria do sistema e ações realizadas.
+              </p>
+            </div>
+            <button 
+              className="action-button primary" 
+              onClick={fetchSystemLogs} 
+              disabled={loadingLogs}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1.2rem' }}
+            >
+              🔄 Atualizar Logs
+            </button>
+          </div>
+
+          {loadingLogs ? (
+            <div className="loading-state">
+              <Loader2 size={36} className="spinner" style={{ color: 'var(--color-primary)' }} />
+              <span>Carregando trilha de auditoria...</span>
+            </div>
+          ) : systemLogs.length === 0 ? (
+            <div className="empty-state" style={{ textAlign: 'center', padding: '3rem 1rem', background: '#f8fafc', borderRadius: '12px' }}>
+              <p style={{ fontSize: '1.1rem', color: '#64748b' }}>Nenhum registro de atividade encontrado ainda.</p>
+              <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Assim que ações forem realizadas, elas aparecerão listadas aqui em tempo real!</span>
+            </div>
+          ) : (
+            <div className="table-wrapper" style={{ background: 'white', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', overflowX: 'auto' }}>
+              <table className="modern-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                    <th style={{ padding: '1rem', width: '160px', color: '#475569', fontSize: '0.85rem' }}>DATA / HORA</th>
+                    <th style={{ padding: '1rem', width: '180px', color: '#475569', fontSize: '0.85rem' }}>TIPO DE AÇÃO</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontSize: '0.85rem' }}>DETALHES DA ATIVIDADE</th>
+                    <th style={{ padding: '1rem', width: '160px', color: '#475569', fontSize: '0.85rem' }}>EXECUTADO POR</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {systemLogs.map((log) => {
+                    const dateObj = new Date(log.createdAt);
+                    const formattedDate = `${dateObj.toLocaleDateString('pt-BR')} ${dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+                    
+                    let badgeColor = '#64748b';
+                    if (log.action.includes('CRIAR') || log.action.includes('LOGIN') || log.action.includes('RSVP')) badgeColor = '#10b981';
+                    if (log.action.includes('EXCLUIR') || log.action.includes('FALHOU') || log.action.includes('REMOVER')) badgeColor = '#ef4444';
+                    if (log.action.includes('EDITAR') || log.action.includes('ATUALIZAR') || log.action.includes('REORDENAR')) badgeColor = '#f59e0b';
+                    if (log.action.includes('MARCAR')) badgeColor = '#8b5cf6';
+                    if (log.action.includes('DESMARCAR')) badgeColor = '#64748b';
+
+                    return (
+                      <tr key={log.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', whiteSpace: 'nowrap', color: '#64748b' }}>{formattedDate}</td>
+                        <td style={{ padding: '0.85rem 1rem' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            padding: '0.25rem 0.65rem',
+                            borderRadius: '50px',
+                            fontSize: '0.75rem',
+                            fontWeight: '700',
+                            backgroundColor: `${badgeColor}15`,
+                            color: badgeColor,
+                            border: `1px solid ${badgeColor}30`
+                          }}>
+                            {log.action}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.85rem 1rem', fontWeight: '500', color: '#1e293b', fontSize: '0.95rem' }}>{log.details}</td>
+                        <td style={{ padding: '0.85rem 1rem' }}>
+                          <span style={{ 
+                            fontWeight: '600', 
+                            color: log.performedBy.toLowerCase().includes('admin') || log.performedBy.toLowerCase() === 'sistema' ? 'var(--color-primary)' : '#475569',
+                            fontSize: '0.85rem',
+                            background: '#f1f5f9',
+                            padding: '0.25rem 0.6rem',
+                            borderRadius: '6px',
+                            display: 'inline-block'
+                          }}>
+                            👤 {log.performedBy}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
       )}
     </div>

@@ -8,11 +8,13 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { UsersService } from './users/users.service';
 import { GiftsModule } from './gifts/gifts.module';
+import { SystemLogsModule } from './system-logs/system-logs.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     PrismaModule, 
+    SystemLogsModule,
     GuestModule,
     AuthModule,
     UsersModule,

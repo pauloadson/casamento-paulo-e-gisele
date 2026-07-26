@@ -59,3 +59,11 @@ model GiftItem {
 
   category    GiftCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
+
+model SystemLog {
+  id          Int      @id @default(autoincrement())
+  action      String
+  details     String   @db.Text
+  performedBy String   @default("Sistema")
+  createdAt   DateTime @default(now())
+}

@@ -1,9 +1,13 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 
 @Injectable()
 export class GiftsService implements OnModuleInit {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private systemLogs: SystemLogsService,
+  ) {}
 
   async onModuleInit() {
     try {
@@ -111,13 +115,13 @@ export class GiftsService implements OnModuleInit {
     });
   }
 
-  async createCategory(data: { name: string; icon?: string }) {
+  async createCategory(data: { name: string; icon?: string }, performedBy: string = 'admin') {
     const maxSeqCat = await this.prisma.giftCategory.findFirst({
       orderBy: { sequence: 'desc' },
     });
     const nextSeq = maxSeqCat ? maxSeqCat.sequence + 1 : 0;
 
-    return this.prisma.giftCategory.create({
+    const res = await this.prisma.giftCategory.create({
       data: {
         name: data.name,
         icon: data.icon || 'Box',
@@ -125,17 +129,23 @@ export class GiftsService implements OnModuleInit {
       },
       include: { items: true },
     });
+    this.systemLogs.logAction('CRIAR_CATEGORIA', `Nova categoria '${data.name}' foi criada.`, performedBy);
+    return res;
   }
 
-  async updateCategory(id: number, data: { name?: string; icon?: string; sequence?: number }) {
-    return this.prisma.giftCategory.update({
+  async updateCategory(id: number, data: { name?: string; icon?: string; sequence?: number }, performedBy: string = 'admin') {
+    const res = await this.prisma.giftCategory.update({
       where: { id },
       data,
       include: { items: true },
     });
+    if (data.name) {
+      this.systemLogs.logAction('EDITAR_CATEGORIA', `Categoria #${id} renomeada para '${data.name}'.`, performedBy);
+    }
+    return res;
   }
 
-  async reorderCategories(order: { id: number; sequence: number }[]) {
+  async reorderCategories(order: { id: number; sequence: number }[], performedBy: string = 'admin') {
     const updatePromises = order.map((item) =>
       this.prisma.giftCategory.update({
         where: { id: item.id },
@@ -143,34 +153,55 @@ export class GiftsService implements OnModuleInit {
       })
     );
     await Promise.all(updatePromises);
+    this.systemLogs.logAction('REORDENAR_CATEGORIAS', 'A ordem de exibição das categorias foi alterada.', performedBy);
     return this.findAll();
   }
 
-  async deleteCategory(id: number) {
-    return this.prisma.giftCategory.delete({
+  async deleteCategory(id: number, performedBy: string = 'admin') {
+    const cat = await this.prisma.giftCategory.findUnique({ where: { id } }).catch(() => null);
+    const res = await this.prisma.giftCategory.delete({
       where: { id },
     });
+    this.systemLogs.logAction('EXCLUIR_CATEGORIA', `Categoria '${cat?.name || id}' e todos os seus itens foram excluídos.`, performedBy);
+    return res;
   }
 
-  async createItem(data: { categoryId: number; name: string }) {
-    return this.prisma.giftItem.create({
+  async createItem(data: { categoryId: number; name: string }, performedBy: string = 'admin') {
+    const res = await this.prisma.giftItem.create({
       data: {
         categoryId: data.categoryId,
         name: data.name,
       },
     });
+    this.systemLogs.logAction('CRIAR_ITEM', `Novo item '${data.name}' foi adicionado na lista.`, performedBy);
+    return res;
   }
 
-  async updateItem(id: number, data: { name?: string; isReceived?: boolean; givenBy?: string | null }) {
-    return this.prisma.giftItem.update({
+  async updateItem(id: number, data: { name?: string; isReceived?: boolean; givenBy?: string | null }, performedBy: string = 'admin') {
+    const oldItem = await this.prisma.giftItem.findUnique({ where: { id } }).catch(() => null);
+    const res = await this.prisma.giftItem.update({
       where: { id },
       data,
     });
+
+    if (data.isReceived !== undefined && data.isReceived !== oldItem?.isReceived) {
+      if (data.isReceived) {
+        this.systemLogs.logAction('MARCAR_GANHO', `Item '${oldItem?.name || id}' foi marcado como GANHO! (Presenteado por: ${data.givenBy || 'Convidado / Não informado'}).`, performedBy);
+      } else {
+        this.systemLogs.logAction('DESMARCAR_GANHO', `Item '${oldItem?.name || id}' foi desmarcado e voltou a ficar disponível.`, performedBy);
+      }
+    } else if (data.name !== undefined) {
+      this.systemLogs.logAction('EDITAR_ITEM', `Item '${oldItem?.name || id}' foi alterado para '${data.name}'.`, performedBy);
+    }
+    return res;
   }
 
-  async deleteItem(id: number) {
-    return this.prisma.giftItem.delete({
+  async deleteItem(id: number, performedBy: string = 'admin') {
+    const item = await this.prisma.giftItem.findUnique({ where: { id } }).catch(() => null);
+    const res = await this.prisma.giftItem.delete({
       where: { id },
     });
+    this.systemLogs.logAction('EXCLUIR_ITEM', `Item '${item?.name || id}' foi removido da lista de presentes.`, performedBy);
+    return res;
   }
 }

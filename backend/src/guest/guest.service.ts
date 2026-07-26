@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 
 @Injectable()
 export class GuestService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private systemLogs: SystemLogsService,
+  ) {}
 
   async create(data: any) {
+    const statusMsg = data.isConfirmed ? 'CONFIRMOU presença!' : 'informou que NÃO poderá comparecer.';
+    this.systemLogs.logAction('RSVP', `Convidado '${data.name}' ${statusMsg} (Tel: ${data.phone || 'Sem tel'})`, `Convidado: ${data.name}`);
+
     // Se não tiver telefone (o que é raro no nosso front), apenas cria
     if (!data.phone) {
       const guestWithoutPhone = await this.prisma.guest.create({
@@ -90,6 +97,9 @@ export class GuestService {
   }
 
   async remove(id: number) {
+    const g = await this.prisma.guest.findUnique({ where: { id } }).catch(() => null);
+    this.systemLogs.logAction('EXCLUIR_CONVIDADO', `Convidado '${g?.name || id}' foi removido do sistema.`, 'admin');
+
     // Remove os registros de auditoria vinculados antes de deletar o convidado
     await this.prisma.auditLog.deleteMany({
       where: { guestId: id },
