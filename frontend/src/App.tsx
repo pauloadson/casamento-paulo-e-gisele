@@ -3,15 +3,19 @@ import RSVP from './pages/RSVP';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Gifts from './pages/Gifts';
+import InstallPwa from './components/InstallPwa';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<RSVP />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/admin" element={<Dashboard />} />
-      <Route path="/presentes" element={<Gifts />} />
-    </Routes>
+    <>
+      <InstallPwa />
+      <Routes>
+        <Route path="/" element={<RSVP />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<Dashboard />} />
+        <Route path="/presentes" element={<Gifts />} />
+      </Routes>
+    </>
   );
 }
 

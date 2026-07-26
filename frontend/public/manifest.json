@@ -1,0 +1,24 @@
+{
+  "name": "Casamento Paulo & Gisele",
+  "short_name": "Paulo & Gisele",
+  "description": "Lista de presentes e confirmação de presença do casamento de Paulo e Gisele",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#86A789",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/aliancas.svg",
+      "sizes": "192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48 72x72 96x96 144x144 any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
