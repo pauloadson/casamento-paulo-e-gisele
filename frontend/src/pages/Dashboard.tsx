@@ -83,7 +83,6 @@ function Dashboard() {
   const [loadingDepSearch, setLoadingDepSearch] = useState(false);
 
   // Quick create dependent inside modal
-  const [showQuickCreateDep, setShowQuickCreateDep] = useState(false);
   const [newDepName, setNewDepName] = useState('');
   const [newDepConfirmed, setNewDepConfirmed] = useState(true);
   const [creatingDepLoading, setCreatingDepLoading] = useState(false);
@@ -243,7 +242,6 @@ function Dashboard() {
     setDepModalGuest(guest);
     setDepSearchQuery('');
     setDepSearchResults([]);
-    setShowQuickCreateDep(false);
     setNewDepName('');
   };
 
@@ -299,7 +297,6 @@ function Dashboard() {
       const updatedCurrent = res.data.find((g: Guest) => g.id === depModalGuest.id);
       if (updatedCurrent) setDepModalGuest(updatedCurrent);
       setNewDepName('');
-      setShowQuickCreateDep(false);
       setMessage('Dependente cadastrado e vinculado!');
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
@@ -1121,19 +1118,64 @@ function Dashboard() {
               )}
             </div>
 
-            {/* Buscar convidado existente no banco com debounce */}
-            <div style={{ marginBottom: '1.5rem', background: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-              <h4 style={{ fontSize: '0.95rem', margin: '0 0 0.5rem 0', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Search size={16} style={{ color: 'var(--color-primary)' }} /> Buscar e Vincular Convidado Existente
+            {/* Secção Principal: Cadastro Rápido (Mais comum) */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <form onSubmit={handleQuickCreateDep} style={{ background: '#F9FCFA', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid #D1E5D9', boxShadow: '0 4px 15px rgba(44, 94, 59, 0.05)' }}>
+                <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '0.95rem', color: '#2C5E3B', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700 }}>
+                  ✨ Cadastrar Novo Dependente (Sem Celular)
+                </h4>
+                <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', margin: '0 0 0.85rem 0' }}>
+                  Ideal para filhos, bebês ou familiares que não têm número próprio.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.25rem', color: 'var(--color-text)' }}>Nome Completo do Dependente:</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="Ex: Pedrinho (Filho)"
+                      value={newDepName}
+                      onChange={e => setNewDepName(e.target.value)}
+                      style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.9rem' }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <input 
+                      type="checkbox" 
+                      id="depConfirmed" 
+                      checked={newDepConfirmed} 
+                      onChange={e => setNewDepConfirmed(e.target.checked)} 
+                    />
+                    <label htmlFor="depConfirmed" style={{ fontSize: '0.85rem', color: 'var(--color-text)', cursor: 'pointer', fontWeight: 500 }}>Já confirmar presença no evento</label>
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="dep-add-btn"
+                    disabled={creatingDepLoading}
+                  >
+                    {creatingDepLoading ? <Loader2 size={16} className="spinner" /> : (
+                      <>
+                        <Plus size={18} /> Adicionar Dependente
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Secção Secundária: Vincular existente */}
+            <div style={{ background: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+              <h4 style={{ fontSize: '0.9rem', margin: '0 0 0.35rem 0', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Search size={16} style={{ color: 'var(--color-primary)' }} /> Ou vincule um convidado já cadastrado (com celular)
               </h4>
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', margin: '0 0 0.75rem 0' }}>
-                Pesquise no sistema por nome ou número de celular com filtro instantâneo:
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', margin: '0 0 0.75rem 0' }}>
+                Pesquise no sistema se a pessoa já preenchou o RSVP separadamente:
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--color-bg-card)', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--color-border)' }}>
                 <Search size={18} style={{ color: 'var(--color-text-light)' }} />
                 <input 
                   type="text"
-                  placeholder="Ex: Pedrinho ou (11) 9999..."
+                  placeholder="Ex: Nome do cônjuge ou (11) 9999..."
                   value={depSearchQuery}
                   onChange={e => setDepSearchQuery(e.target.value)}
                   style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.9rem', color: 'var(--color-text)' }}
@@ -1142,7 +1184,7 @@ function Dashboard() {
               </div>
 
               {depSearchQuery.trim() && (
-                <div style={{ marginTop: '0.75rem', maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div style={{ marginTop: '0.75rem', maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                   {loadingDepSearch && depSearchResults.length === 0 && (
                     <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', textAlign: 'center', padding: '0.5rem' }}>Buscando no servidor...</div>
                   )}
@@ -1168,66 +1210,6 @@ function Dashboard() {
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-
-            {/* Cadastro rápido caso não exista */}
-            <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
-              {!showQuickCreateDep ? (
-                <button 
-                  type="button" 
-                  onClick={() => setShowQuickCreateDep(true)}
-                  style={{ background: 'rgba(134, 167, 137, 0.08)', border: '1px dashed #2C5E3B', color: '#2C5E3B', width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', margin: 0, boxShadow: 'none', transition: 'all 0.2s' }}
-                >
-                  <Plus size={18} /> Cadastrar Novo Dependente Sem Celular (Ex: Bebê)
-                </button>
-              ) : (
-                <form onSubmit={handleQuickCreateDep} style={{ background: '#F9FCFA', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid #D1E5D9' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <h5 style={{ margin: 0, fontSize: '0.95rem', color: '#2C5E3B', fontWeight: 700 }}>✨ Novo Dependente para {depModalGuest.name}</h5>
-                    <button 
-                      type="button" 
-                      className="modal-close-btn"
-                      onClick={() => setShowQuickCreateDep(false)}
-                      title="Cancelar"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.25rem', color: 'var(--color-text)' }}>Nome Completo do Dependente:</label>
-                      <input 
-                        type="text" 
-                        required
-                        placeholder="Ex: Pedrinho (Filho)"
-                        value={newDepName}
-                        onChange={e => setNewDepName(e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.9rem' }}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <input 
-                        type="checkbox" 
-                        id="depConfirmed" 
-                        checked={newDepConfirmed} 
-                        onChange={e => setNewDepConfirmed(e.target.checked)} 
-                      />
-                      <label htmlFor="depConfirmed" style={{ fontSize: '0.85rem', color: 'var(--color-text)', cursor: 'pointer' }}>Já confirmar presença no evento</label>
-                    </div>
-                    <button 
-                      type="submit" 
-                      className="dep-add-btn"
-                      disabled={creatingDepLoading}
-                    >
-                      {creatingDepLoading ? <Loader2 size={16} className="spinner" /> : (
-                        <>
-                          <Plus size={18} /> Adicionar
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
               )}
             </div>
           </div>
