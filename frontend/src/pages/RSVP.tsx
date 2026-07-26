@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Gift } from 'lucide-react';
+import AdminShortcut from '../components/AdminShortcut';
 import './Gifts.css';
 
 function RSVP() {
@@ -53,23 +54,26 @@ function RSVP() {
     setStatus('loading');
     
     try {
-      const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      const apiUrl = rawUrl.replace(/\/+$/, '');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiKey = import.meta.env.VITE_API_KEY || '';
       
-      const response = await fetch(`${apiUrl}/guests`, {
+      const res = await fetch(`${apiUrl}/guests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': import.meta.env.VITE_API_KEY || '',
+          'x-api-key': apiKey,
         },
         body: JSON.stringify({
-          ...formData,
-          phone: formData.phone.replace(/\D/g, ''),
+          name: formData.name,
+          phone: formData.phone.replace(/\D/g, '') || null,
           isConfirmed: formData.isConfirmed === 'yes',
+          adultsCount: Number(formData.adultsCount),
+          childrenCount: Number(formData.childrenCount),
+          message: formData.message,
         }),
       });
 
-      if (!response.ok) throw new Error('Falha ao confirmar');
+      if (!res.ok) throw new Error('Falha no envio');
       
       setStatus('success');
       setFormData({
@@ -90,6 +94,9 @@ function RSVP() {
   return (
     <>
     <div className="rsvp-container">
+      <div style={{ textAlign: 'center' }}>
+        <AdminShortcut />
+      </div>
       <h1>Paulo & Gisele</h1>
       <p className="subtitle">Confirme sua presença conosco!</p>
 

@@ -1,59 +1,41 @@
 .admin-shortcut-btn {
-  position: fixed;
-  bottom: 2rem;
-  left: 2rem;
-  z-index: 1000;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  background: white;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
-  padding: 0.8rem 1.25rem;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1.1rem;
   border-radius: 50px;
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation: floatInAdmin 0.4s ease-out;
+  margin: 0 auto 1rem auto;
+  box-shadow: 0 4px 12px rgba(134, 167, 137, 0.3);
+  transition: all 0.2s ease;
+  animation: fadeInAdmin 0.3s ease-out;
 }
 
 .admin-shortcut-btn:hover {
-  background: var(--color-primary);
-  color: white;
-  transform: translateY(-4px) scale(1.03);
-  box-shadow: 0 8px 25px rgba(134, 167, 137, 0.4);
+  background: #6a886d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(134, 167, 137, 0.4);
 }
 
 .admin-shortcut-icon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
-  transition: transform 0.4s ease;
+  transition: transform 0.3s ease;
 }
 
 .admin-shortcut-btn:hover .admin-shortcut-icon {
   transform: rotate(360deg);
 }
 
-@keyframes floatInAdmin {
-  from { opacity: 0; transform: translateY(20px) scale(0.9); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@media (max-width: 600px) {
-  .admin-shortcut-btn {
-    bottom: 1.5rem;
-    left: 1rem;
-    padding: 0.65rem 1rem;
-    font-size: 0.85rem;
-    gap: 0.4rem;
-  }
-  
-  .admin-shortcut-icon {
-    width: 18px;
-    height: 18px;
-  }
+@keyframes fadeInAdmin {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

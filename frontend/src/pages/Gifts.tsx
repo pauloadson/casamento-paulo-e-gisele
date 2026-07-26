@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, MessageCircle, Loader2, Check } from 'lucide-react';
+import AdminShortcut from '../components/AdminShortcut';
 import './Gifts.css';
 
 interface GiftItemData {
@@ -128,7 +129,9 @@ export default function Gifts() {
           <h2>Nossa Lista de Sugestões</h2>
           <div style={{ width: 24 }}></div>
         </div>
-            
+        <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+          <AdminShortcut />
+        </div>
         <p className="gift-modal-subtitle">
           Sua presença é nosso maior presente! Mas se desejar nos presentear, aqui estão algumas sugestões.
         </p>
