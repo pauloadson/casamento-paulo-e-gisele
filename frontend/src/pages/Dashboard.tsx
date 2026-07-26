@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
   Trash2, Plus, Edit2, ArrowUp, ArrowDown, Check, X, Gift, 
   Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, User, Loader2,
-  ChevronUp, ChevronDown, Minimize2, Maximize2
+  ChevronUp, ChevronDown, Minimize2, Maximize2, ArrowLeft
 } from 'lucide-react';
 import './Dashboard.css';
 
@@ -340,7 +340,12 @@ function Dashboard() {
     <div className="rsvp-container dashboard-container">
       <div className="header-container">
         <h1>Painel de Controle</h1>
-        <button onClick={logout} className="logout-btn">Sair</button>
+        <div className="header-actions">
+          <button onClick={() => navigate('/')} className="back-home-btn" title="Voltar para a página inicial">
+            <ArrowLeft size={16} /> Voltar para o site
+          </button>
+          <button onClick={logout} className="logout-btn">Sair</button>
+        </div>
       </div>
 
       <div className="tabs">

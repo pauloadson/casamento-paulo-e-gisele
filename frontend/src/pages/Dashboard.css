@@ -234,6 +234,35 @@
   box-sizing: border-box;
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.back-home-btn {
+  background: transparent;
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.back-home-btn:hover {
+  background: rgba(134, 167, 137, 0.1);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
 @media (max-width: 600px) {
   .category-admin-card {
     padding: 1rem 0.75rem;
