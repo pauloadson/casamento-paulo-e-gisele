@@ -18,6 +18,12 @@ export class GuestController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.guestService.findOne(+id);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post(':id/dependents/:dependentId')
   async linkDependent(@Param('id') id: string, @Param('dependentId') dependentId: string) {
     return this.guestService.linkDependent(+id, +dependentId);

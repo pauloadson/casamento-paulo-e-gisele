@@ -129,6 +129,17 @@ export class GuestService {
     });
   }
 
+  async findOne(id: number) {
+    return this.prisma.guest.findUnique({
+      where: { id },
+      include: {
+        auditLogs: true,
+        dependents: true,
+        parents: true,
+      },
+    });
+  }
+
   async linkDependent(parentId: number, dependentId: number) {
     if (parentId === dependentId) {
       throw new BadRequestException('Um convidado não pode ser dependente de si mesmo.');

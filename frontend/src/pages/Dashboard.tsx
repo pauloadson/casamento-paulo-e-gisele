@@ -75,18 +75,6 @@ function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
-  // Dependents modal state
-  const [depModalGuest, setDepModalGuest] = useState<Guest | null>(null);
-  const [depSearchQuery, setDepSearchQuery] = useState('');
-  const [debouncedDepSearchQuery, setDebouncedDepSearchQuery] = useState('');
-  const [depSearchResults, setDepSearchResults] = useState<Guest[]>([]);
-  const [loadingDepSearch, setLoadingDepSearch] = useState(false);
-
-  // Quick create dependent inside modal
-  const [newDepName, setNewDepName] = useState('');
-  const [newDepConfirmed, setNewDepConfirmed] = useState(true);
-  const [creatingDepLoading, setCreatingDepLoading] = useState(false);
-
   // State for inline editing in Gifts tab
   const [editingCatId, setEditingCatId] = useState<number | null>(null);
   const [editingCatName, setEditingCatName] = useState('');
@@ -209,102 +197,7 @@ function Dashboard() {
     }
   }, [debouncedSearchQuery]);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedDepSearchQuery(depSearchQuery);
-    }, 350);
-    return () => clearTimeout(handler);
-  }, [depSearchQuery]);
 
-  useEffect(() => {
-    if (depModalGuest && debouncedDepSearchQuery.trim()) {
-      const searchDeps = async () => {
-        setLoadingDepSearch(true);
-        try {
-          const url = `${getApiUrl()}/guests?search=${encodeURIComponent(debouncedDepSearchQuery.trim())}`;
-          const res = await axios.get(url, { headers: getApiHeaders() });
-          const currentDepIds = depModalGuest.dependents?.map(d => d.id) || [];
-          const filtered = res.data.filter((g: Guest) => g.id !== depModalGuest.id && !currentDepIds.includes(g.id));
-          setDepSearchResults(filtered);
-        } catch (e) {
-          console.error('Erro na busca de dependentes', e);
-        } finally {
-          setLoadingDepSearch(false);
-        }
-      };
-      searchDeps();
-    } else {
-      setDepSearchResults([]);
-    }
-  }, [debouncedDepSearchQuery, depModalGuest]);
-
-  const handleOpenDepModal = (guest: Guest) => {
-    setDepModalGuest(guest);
-    setDepSearchQuery('');
-    setDepSearchResults([]);
-    setNewDepName('');
-  };
-
-  const handleLinkDependent = async (dependentId: number) => {
-    if (!depModalGuest) return;
-    setActionLoading(`link-dep-${dependentId}`);
-    try {
-      const res = await axios.post(`${getApiUrl()}/guests/${depModalGuest.id}/dependents/${dependentId}`, {}, { headers: getApiHeaders() });
-      setDepModalGuest(res.data);
-      setGuests(prev => prev.map(g => g.id === res.data.id ? res.data : g));
-      setDepSearchResults(prev => prev.filter(g => g.id !== dependentId));
-      setMessage('Dependente vinculado com sucesso!');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (e: any) {
-      alert(e.response?.data?.message || 'Erro ao vincular dependente.');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleUnlinkDependent = async (dependentId: number) => {
-    if (!depModalGuest) return;
-    setActionLoading(`unlink-dep-${dependentId}`);
-    try {
-      const res = await axios.delete(`${getApiUrl()}/guests/${depModalGuest.id}/dependents/${dependentId}`, { headers: getApiHeaders() });
-      setDepModalGuest(res.data);
-      setGuests(prev => prev.map(g => g.id === res.data.id ? res.data : g));
-      setMessage('Dependente desvinculado.');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (e) {
-      alert('Erro ao desvincular dependente.');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleQuickCreateDep = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!depModalGuest || !newDepName.trim()) return;
-    setCreatingDepLoading(true);
-    try {
-      const payload = {
-        name: newDepName.trim(),
-        isConfirmed: newDepConfirmed,
-        phone: null,
-        message: null,
-        parentId: depModalGuest.id,
-      };
-      await axios.post(`${getApiUrl()}/guests`, payload, { headers: getApiHeaders() });
-      const url = `${getApiUrl()}/guests${debouncedSearchQuery ? `?search=${encodeURIComponent(debouncedSearchQuery)}` : ''}`;
-      const res = await axios.get(url, { headers: getApiHeaders() });
-      setGuests(res.data);
-      const updatedCurrent = res.data.find((g: Guest) => g.id === depModalGuest.id);
-      if (updatedCurrent) setDepModalGuest(updatedCurrent);
-      setNewDepName('');
-      setMessage('Dependente cadastrado e vinculado!');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err) {
-      alert('Erro ao cadastrar dependente.');
-    } finally {
-      setCreatingDepLoading(false);
-    }
-  };
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -608,13 +501,12 @@ function Dashboard() {
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                           <button 
                             type="button" 
-                            className="dep-btn" 
-                            onClick={() => handleOpenDepModal(g)}
+                            onClick={() => navigate(`/admin/guests/${g.id}/dependents`)}
                             title="Gerenciar Dependentes"
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)', border: '1px solid var(--color-primary)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'var(--color-primary-light)', color: 'var(--color-primary-dark)', border: '1px solid var(--color-primary)', padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', height: '36px', minWidth: '125px' }}
                           >
                             <UserPlus size={16} />
-                            + Dep.
+                            + Dependentes
                           </button>
                           <button 
                             type="button" 
@@ -622,6 +514,7 @@ function Dashboard() {
                             onClick={() => handleDeleteGuest(g.id, g.name)}
                             disabled={actionLoading === `delete-guest-${g.id}`}
                             title="Excluir convidado"
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s', height: '36px', minWidth: '125px', margin: 0 }}
                           >
                             {actionLoading === `delete-guest-${g.id}` ? (
                               <Loader2 size={16} className="spinner" />
@@ -1060,161 +953,6 @@ function Dashboard() {
         </section>
       )}
 
-      {/* Modal de Gestão de Dependentes */}
-      {depModalGuest && (
-        <div className="modal-overlay" onClick={() => setDepModalGuest(null)}>
-          <div className="dep-modal-content" onClick={e => e.stopPropagation()} style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', maxWidth: '560px', width: '90%', maxHeight: '85vh', overflowY: 'auto', boxShadow: '0 12px 40px rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', position: 'relative' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-primary-dark)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <UserPlus size={22} /> Dependentes de {depModalGuest.name}
-                </h3>
-                <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.85rem', color: 'var(--color-text-light)' }}>
-                  Vincule familiares (ex: filhos sem celular, cônjuges) à este responsável.
-                </p>
-              </div>
-              <button 
-                type="button" 
-                className="modal-close-btn" 
-                onClick={() => setDepModalGuest(null)}
-                title="Fechar"
-              >
-                <X size={22} />
-              </button>
-            </div>
-
-            {/* Lista de dependentes vinculados atualmente */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <h4 style={{ fontSize: '0.95rem', margin: '0 0 0.75rem 0', color: 'var(--color-text)' }}>
-                👥 Dependentes Vinculados ({depModalGuest.dependents?.length || 0})
-              </h4>
-              {(!depModalGuest.dependents || depModalGuest.dependents.length === 0) ? (
-                <div style={{ padding: '0.85rem', background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--color-border)', textAlign: 'center', color: 'var(--color-text-light)', fontSize: '0.85rem' }}>
-                  Nenhum dependente vinculado a {depModalGuest.name} no momento.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {depModalGuest.dependents.map(dep => (
-                    <div key={dep.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.85rem', background: '#F4F9F5', borderRadius: 'var(--radius-sm)', border: '1px solid #C2DFCA' }}>
-                      <div>
-                        <strong style={{ color: '#2C5E3B', fontSize: '0.95rem', display: 'block' }}>{dep.name}</strong>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-light)' }}>
-                          {dep.phone ? `Tel: ${dep.phone}` : 'Sem telefone (Bebê/Criança)'} • {dep.isConfirmed ? 'Confirmado' : 'Não Confirmado'}
-                        </span>
-                      </div>
-                      <button 
-                        type="button"
-                        onClick={() => handleUnlinkDependent(dep.id)}
-                        disabled={actionLoading === `unlink-dep-${dep.id}`}
-                        style={{ background: '#FFEBEB', color: '#D32F2F', border: '1px solid #FFCDB2', padding: '0.35rem 0.65rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', width: 'auto', margin: 0, boxShadow: 'none' }}
-                        title="Desvincular dependente"
-                      >
-                        {actionLoading === `unlink-dep-${dep.id}` ? <Loader2 size={14} className="spinner" /> : <Trash2 size={14} />}
-                        Desvincular
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Secção Principal: Cadastro Rápido (Mais comum) */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <form onSubmit={handleQuickCreateDep} style={{ background: '#F9FCFA', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid #D1E5D9', boxShadow: '0 4px 15px rgba(44, 94, 59, 0.05)' }}>
-                <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '0.95rem', color: '#2C5E3B', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700 }}>
-                  ✨ Cadastrar Novo Dependente (Sem Celular)
-                </h4>
-                <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', margin: '0 0 0.85rem 0' }}>
-                  Ideal para filhos, bebês ou familiares que não têm número próprio.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.25rem', color: 'var(--color-text)' }}>Nome Completo do Dependente:</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="Ex: Pedrinho (Filho)"
-                      value={newDepName}
-                      onChange={e => setNewDepName(e.target.value)}
-                      style={{ width: '100%', padding: '0.6rem 0.8rem', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.9rem' }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <input 
-                      type="checkbox" 
-                      id="depConfirmed" 
-                      checked={newDepConfirmed} 
-                      onChange={e => setNewDepConfirmed(e.target.checked)} 
-                    />
-                    <label htmlFor="depConfirmed" style={{ fontSize: '0.85rem', color: 'var(--color-text)', cursor: 'pointer', fontWeight: 500 }}>Já confirmar presença no evento</label>
-                  </div>
-                  <button 
-                    type="submit" 
-                    className="dep-add-btn"
-                    disabled={creatingDepLoading}
-                  >
-                    {creatingDepLoading ? <Loader2 size={16} className="spinner" /> : (
-                      <>
-                        <Plus size={18} /> Adicionar Dependente
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Secção Secundária: Vincular existente */}
-            <div style={{ background: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-              <h4 style={{ fontSize: '0.9rem', margin: '0 0 0.35rem 0', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Search size={16} style={{ color: 'var(--color-primary)' }} /> Ou vincule um convidado já cadastrado (com celular)
-              </h4>
-              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', margin: '0 0 0.75rem 0' }}>
-                Pesquise no sistema se a pessoa já preenchou o RSVP separadamente:
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--color-bg-card)', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--color-border)' }}>
-                <Search size={18} style={{ color: 'var(--color-text-light)' }} />
-                <input 
-                  type="text"
-                  placeholder="Ex: Nome do cônjuge ou (11) 9999..."
-                  value={depSearchQuery}
-                  onChange={e => setDepSearchQuery(e.target.value)}
-                  style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '0.9rem', color: 'var(--color-text)' }}
-                />
-                {loadingDepSearch && <Loader2 size={18} className="spinner" style={{ color: 'var(--color-primary)' }} />}
-              </div>
-
-              {depSearchQuery.trim() && (
-                <div style={{ marginTop: '0.75rem', maxHeight: '160px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  {loadingDepSearch && depSearchResults.length === 0 && (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', textAlign: 'center', padding: '0.5rem' }}>Buscando no servidor...</div>
-                  )}
-                  {!loadingDepSearch && depSearchResults.length === 0 && (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', textAlign: 'center', padding: '0.5rem' }}>Nenhum outro convidado encontrado com "{depSearchQuery}".</div>
-                  )}
-                  {depSearchResults.map(res => (
-                    <div key={res.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0.75rem', background: 'var(--color-bg-card)', borderRadius: '6px', border: '1px solid var(--color-border)' }}>
-                      <div>
-                        <strong style={{ fontSize: '0.85rem', display: 'block', color: 'var(--color-text)' }}>{res.name}</strong>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-light)' }}>
-                          {res.phone || 'Sem celular'} • {res.isConfirmed ? 'Confirmado' : 'Pendente'}
-                        </span>
-                      </div>
-                      <button 
-                        type="button"
-                        className="dep-link-btn"
-                        onClick={() => handleLinkDependent(res.id)}
-                        disabled={actionLoading === `link-dep-${res.id}`}
-                      >
-                        {actionLoading === `link-dep-${res.id}` ? <Loader2 size={14} className="spinner" /> : '+ Vincular'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
