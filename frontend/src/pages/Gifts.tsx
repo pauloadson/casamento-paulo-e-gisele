@@ -37,9 +37,18 @@ export default function Gifts() {
             'x-api-key': import.meta.env.VITE_API_KEY || ''
           }
         });
-        setCategories(response.data);
-        if (response.data.length > 0) {
-          setActiveTab(response.data[0].name);
+        
+        const sortedData = response.data.map(cat => ({
+          ...cat,
+          items: [...cat.items].sort((a, b) => {
+            if (a.isReceived === b.isReceived) return 0;
+            return a.isReceived ? 1 : -1;
+          })
+        }));
+
+        setCategories(sortedData);
+        if (sortedData.length > 0) {
+          setActiveTab(sortedData[0].name);
         }
       } catch (error) {
         console.error('Erro ao buscar lista de presentes:', error);
