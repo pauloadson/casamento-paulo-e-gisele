@@ -367,6 +367,7 @@ button:disabled {
   border-bottom: 1px solid rgba(134, 167, 137, 0.15);
   color: var(--color-text-main);
   font-size: 0.95rem;
+  vertical-align: top;
 }
 
 .modern-table tr:last-child td {

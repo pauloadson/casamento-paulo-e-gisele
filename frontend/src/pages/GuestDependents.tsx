@@ -40,6 +40,13 @@ const GuestDependents: React.FC = () => {
   const [loadingSearch, setLoadingSearch] = useState(false);
   const [actionLoading, setActionLoading] = useState('');
 
+  // Edit dependent state
+  const [editingDep, setEditingDep] = useState<Guest | null>(null);
+  const [editDepName, setEditDepName] = useState('');
+  const [editDepPhone, setEditDepPhone] = useState('');
+  const [editDepConfirmed, setEditDepConfirmed] = useState(true);
+  const [savingDepLoading, setSavingDepLoading] = useState(false);
+
   const getApiUrl = () => {
     const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     return rawUrl.replace(/\/+$/, '');
@@ -159,6 +166,36 @@ const GuestDependents: React.FC = () => {
     }
   };
 
+  const handleOpenEditDep = (dep: Guest) => {
+    setEditingDep(dep);
+    setEditDepName(dep.name || '');
+    setEditDepPhone(dep.phone || '');
+    setEditDepConfirmed(dep.isConfirmed);
+  };
+
+  const handleSaveEditDep = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDep || !editDepName.trim()) return;
+    setSavingDepLoading(true);
+    try {
+      const payload = {
+        name: editDepName.trim(),
+        phone: editDepPhone.trim() || null,
+        isConfirmed: editDepConfirmed,
+        message: editingDep.message || null,
+      };
+      await axios.put(`${getApiUrl()}/guests/${editingDep.id}`, payload, { headers: getApiHeaders() });
+      await fetchGuest(); // Refresh the parent to get updated dependents
+      setEditingDep(null);
+      setMessage('Dependente atualizado com sucesso!');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao atualizar dependente.');
+    } finally {
+      setSavingDepLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="guest-dependents-page" style={{ justifyContent: 'center' }}>
@@ -275,16 +312,26 @@ const GuestDependents: React.FC = () => {
                       </b>
                     </span>
                   </div>
-                  <button 
-                    type="button"
-                    className="dep-unlink-btn"
-                    onClick={() => handleUnlinkDependent(dep.id)}
-                    disabled={actionLoading === `unlink-${dep.id}`}
-                    title="Desvincular dependente"
-                  >
-                    {actionLoading === `unlink-${dep.id}` ? <Loader2 size={15} className="spinner" /> : <Trash2 size={15} />}
-                    Desvincular
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+                    <button 
+                      type="button"
+                      style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', padding: '0.4rem 0.6rem', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                      onClick={() => handleOpenEditDep(dep)}
+                      title="Editar dependente"
+                    >
+                      Editar
+                    </button>
+                    <button 
+                      type="button"
+                      className="dep-unlink-btn"
+                      onClick={() => handleUnlinkDependent(dep.id)}
+                      disabled={actionLoading === `unlink-${dep.id}`}
+                      title="Desvincular dependente"
+                    >
+                      {actionLoading === `unlink-${dep.id}` ? <Loader2 size={15} className="spinner" /> : <Trash2 size={15} />}
+                      Desvincular
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -341,6 +388,80 @@ const GuestDependents: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de Editar Dependente */}
+      {editingDep && (
+        <div className="modal-overlay" onClick={() => setEditingDep(null)}>
+          <div className="dep-modal-content" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-primary-dark)' }}>
+                Editar Dependente: {editingDep.name}
+              </h3>
+              <button 
+                type="button" 
+                className="modal-close-btn" 
+                onClick={() => setEditingDep(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditDep} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Nome Completo:</label>
+                <input 
+                  type="text" 
+                  required
+                  value={editDepName} 
+                  onChange={e => setEditDepName(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Telefone / Celular (ou em branco caso seja criança):</label>
+                <input 
+                  type="text" 
+                  value={editDepPhone} 
+                  onChange={e => setEditDepPhone(e.target.value)}
+                  placeholder="(11) 99999-9999"
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Status da Confirmação:</label>
+                <select
+                  value={editDepConfirmed ? 'true' : 'false'}
+                  onChange={e => setEditDepConfirmed(e.target.value === 'true')}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
+                >
+                  <option value="true">✅ Presença Confirmada</option>
+                  <option value="false">❌ Não Comparecerá</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setEditingDep(null)}
+                  style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', padding: '0.75rem 1.25rem', borderRadius: 'var(--radius-sm)', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="dep-add-btn"
+                  disabled={savingDepLoading}
+                  style={{ width: 'auto', margin: 0 }}
+                >
+                  {savingDepLoading ? <Loader2 size={18} className="spinner" /> : '💾 Salvar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
