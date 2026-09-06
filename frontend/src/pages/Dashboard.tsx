@@ -63,7 +63,6 @@ function Dashboard() {
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts' | 'logs' | 'settings'>('guests');
-  const [systemSettings, setSystemSettings] = useState<Record<string, string>>({});
   const [settingsNoivoPhone, setSettingsNoivoPhone] = useState('');
   const [settingsNoivaPhone, setSettingsNoivaPhone] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
@@ -193,7 +192,6 @@ function Dashboard() {
   const fetchSettings = async () => {
     try {
       const res = await axios.get(`${getApiUrl()}/settings`, { headers: getApiHeaders() });
-      setSystemSettings(res.data);
       setSettingsNoivoPhone(res.data.noivoPhone || '');
       setSettingsNoivaPhone(res.data.noivaPhone || '');
     } catch (err) {
