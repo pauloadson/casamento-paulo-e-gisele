@@ -1093,7 +1093,7 @@ function Dashboard() {
             {message && <div className="alert success">{message}</div>}
             
             <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="settings-grid-2">
                 <div className="form-group">
                   <label>Nome do Noivo:</label>
                   <input 
@@ -1113,7 +1113,7 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="settings-grid-2">
                 <div className="form-group">
                   <label>Nome da Noiva:</label>
                   <input 
@@ -1155,15 +1155,15 @@ function Dashboard() {
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '0.5rem' }}>
+              <div className="settings-grid-3">
                 <div className="form-group" style={{ marginBottom: '0.5rem' }}>
                   <label>Cor Principal:</label>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <input type="color" value={settingsColorPrimary} onChange={e => {
                       setSettingsColorPrimary(e.target.value);
                       document.documentElement.style.setProperty('--color-primary', e.target.value);
-                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer' }} />
-                    <input type="text" value={settingsColorPrimary} onChange={e => setSettingsColorPrimary(e.target.value)} style={{ flex: 1 }} />
+                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer', flexShrink: 0 }} />
+                    <input type="text" value={settingsColorPrimary} onChange={e => setSettingsColorPrimary(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
                   </div>
                 </div>
                 <div className="form-group" style={{ marginBottom: '0.5rem' }}>
@@ -1172,8 +1172,8 @@ function Dashboard() {
                     <input type="color" value={settingsColorSecondary} onChange={e => {
                       setSettingsColorSecondary(e.target.value);
                       document.documentElement.style.setProperty('--color-secondary', e.target.value);
-                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer' }} />
-                    <input type="text" value={settingsColorSecondary} onChange={e => setSettingsColorSecondary(e.target.value)} style={{ flex: 1 }} />
+                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer', flexShrink: 0 }} />
+                    <input type="text" value={settingsColorSecondary} onChange={e => setSettingsColorSecondary(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
                   </div>
                 </div>
                 <div className="form-group" style={{ marginBottom: '0.5rem' }}>
@@ -1182,17 +1182,17 @@ function Dashboard() {
                     <input type="color" value={settingsColorAccent} onChange={e => {
                       setSettingsColorAccent(e.target.value);
                       document.documentElement.style.setProperty('--color-accent', e.target.value);
-                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer' }} />
-                    <input type="text" value={settingsColorAccent} onChange={e => setSettingsColorAccent(e.target.value)} style={{ flex: 1 }} />
+                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer', flexShrink: 0 }} />
+                    <input type="text" value={settingsColorAccent} onChange={e => setSettingsColorAccent(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <button type="button" onClick={handleResetColors} style={{ background: '#f1f5f9', color: '#475569', boxShadow: 'none' }}>
+              <div className="settings-actions">
+                <button type="button" onClick={handleResetColors} style={{ background: '#f1f5f9', color: '#475569', boxShadow: 'none', margin: 0 }}>
                   Restaurar Cores
                 </button>
-                <button type="submit" disabled={savingSettings}>
+                <button type="submit" disabled={savingSettings} style={{ margin: 0 }}>
                   {savingSettings ? <Loader2 size={18} className="spinner" /> : 'Salvar Configurações'}
                 </button>
               </div>

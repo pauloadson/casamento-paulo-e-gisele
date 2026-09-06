@@ -452,6 +452,25 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+/* Settings Responsive Grid */
+.settings-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.settings-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 1rem;
+}
+
 /* Responsividade para Celulares (Mobile) */
 @media (max-width: 600px) {
   body {
@@ -488,6 +507,14 @@ button:disabled {
   
   .logout-btn {
     width: 100%;
+  }
+
+  .settings-grid-2, .settings-grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-actions {
+    flex-direction: column;
   }
 }
 
