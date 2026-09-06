@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 
 @Injectable()
 export class SettingsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private systemLogs: SystemLogsService
+  ) {}
 
   async getSettings() {
     const settings = await this.prisma.systemSetting.findMany();
@@ -23,6 +27,13 @@ export class SettingsService {
         create: { key, value: data[key] },
       });
     }
+
+    await this.systemLogs.logAction(
+      'ATUALIZAR CONFIGURAÇÃO',
+      'Os números de contato dos noivos foram alterados',
+      'Admin'
+    );
+
     return this.getSettings();
   }
 }

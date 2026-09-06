@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SettingsService } from './settings.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 
 describe('SettingsService', () => {
   let service: SettingsService;
@@ -13,11 +14,16 @@ describe('SettingsService', () => {
     },
   };
 
+  const mockSystemLogsService = {
+    logAction: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SettingsService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: SystemLogsService, useValue: mockSystemLogsService },
       ],
     }).compile();
 
