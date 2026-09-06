@@ -58,6 +58,11 @@ export default function Gifts() {
             headers: { 'x-api-key': import.meta.env.VITE_API_KEY || '' }
           });
           setSystemSettings(settingsRes.data);
+          if (settingsRes.data.pageTitle) {
+            document.title = settingsRes.data.pageTitle;
+          } else {
+            document.title = 'Confirmação de Presença';
+          }
         } catch (settingsError) {
           console.error('Erro ao buscar configurações:', settingsError);
         }

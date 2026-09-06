@@ -30,6 +30,11 @@ function RSVP() {
           headers: { 'x-api-key': import.meta.env.VITE_API_KEY || '' }
         });
         setSystemSettings(res.data);
+        if (res.data.pageTitle) {
+          document.title = res.data.pageTitle;
+        } else {
+          document.title = 'Confirmação de Presença';
+        }
       } catch (err) {
         console.error('Erro ao buscar configurações:', err);
       } finally {

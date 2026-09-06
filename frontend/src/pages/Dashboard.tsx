@@ -68,6 +68,7 @@ function Dashboard() {
   const [settingsNoivaPhone, setSettingsNoivaPhone] = useState('');
   const [settingsNoivaName, setSettingsNoivaName] = useState('');
   const [settingsNameOrder, setSettingsNameOrder] = useState('noivo-first');
+  const [settingsPageTitle, setSettingsPageTitle] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
   const navigate = useNavigate();
 
@@ -200,6 +201,7 @@ function Dashboard() {
       setSettingsNoivaPhone(res.data.noivaPhone || '');
       setSettingsNoivaName(res.data.noivaName || '');
       setSettingsNameOrder(res.data.nameOrder || 'noivo-first');
+      setSettingsPageTitle(res.data.pageTitle || '');
     } catch (err) {
       console.error('Erro ao buscar configurações:', err);
     }
@@ -299,7 +301,8 @@ function Dashboard() {
         noivaPhone: settingsNoivaPhone.replace(/\D/g, ''),
         noivoName: settingsNoivoName,
         noivaName: settingsNoivaName,
-        nameOrder: settingsNameOrder
+        nameOrder: settingsNameOrder,
+        pageTitle: settingsPageTitle
       }, { headers: getApiHeaders() });
       setMessage('Configurações atualizadas com sucesso!');
       setTimeout(() => setMessage(''), 3000);
@@ -1097,6 +1100,16 @@ function Dashboard() {
                     onChange={e => setSettingsNoivaPhone(e.target.value)} 
                   />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Título da Aba do Navegador (Opcional):</label>
+                <input 
+                  type="text" 
+                  placeholder="Ex: João & Maria - Casamento"
+                  value={settingsPageTitle} 
+                  onChange={e => setSettingsPageTitle(e.target.value)} 
+                />
               </div>
 
               <div className="form-group">
