@@ -63,6 +63,10 @@ export default function Gifts() {
           } else {
             document.title = 'Confirmação de Presença';
           }
+          
+          if (settingsRes.data.colorPrimary) document.documentElement.style.setProperty('--color-primary', settingsRes.data.colorPrimary);
+          if (settingsRes.data.colorSecondary) document.documentElement.style.setProperty('--color-secondary', settingsRes.data.colorSecondary);
+          if (settingsRes.data.colorAccent) document.documentElement.style.setProperty('--color-accent', settingsRes.data.colorAccent);
         } catch (settingsError) {
           console.error('Erro ao buscar configurações:', settingsError);
         }

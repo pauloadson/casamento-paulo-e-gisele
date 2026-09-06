@@ -69,6 +69,9 @@ function Dashboard() {
   const [settingsNoivaName, setSettingsNoivaName] = useState('');
   const [settingsNameOrder, setSettingsNameOrder] = useState('noivo-first');
   const [settingsPageTitle, setSettingsPageTitle] = useState('');
+  const [settingsColorPrimary, setSettingsColorPrimary] = useState('');
+  const [settingsColorSecondary, setSettingsColorSecondary] = useState('');
+  const [settingsColorAccent, setSettingsColorAccent] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
   const navigate = useNavigate();
 
@@ -202,6 +205,14 @@ function Dashboard() {
       setSettingsNoivaName(res.data.noivaName || '');
       setSettingsNameOrder(res.data.nameOrder || 'noivo-first');
       setSettingsPageTitle(res.data.pageTitle || '');
+      setSettingsColorPrimary(res.data.colorPrimary || '#86A789');
+      setSettingsColorSecondary(res.data.colorSecondary || '#D2E3C6');
+      setSettingsColorAccent(res.data.colorAccent || '#739072');
+      
+      // Aplica as cores localmente no painel para preview imediato se já existirem
+      if (res.data.colorPrimary) document.documentElement.style.setProperty('--color-primary', res.data.colorPrimary);
+      if (res.data.colorSecondary) document.documentElement.style.setProperty('--color-secondary', res.data.colorSecondary);
+      if (res.data.colorAccent) document.documentElement.style.setProperty('--color-accent', res.data.colorAccent);
     } catch (err) {
       console.error('Erro ao buscar configurações:', err);
     }
@@ -296,14 +307,25 @@ function Dashboard() {
     e.preventDefault();
     setSavingSettings(true);
     try {
-      await axios.put(`${getApiUrl()}/settings`, {
+      const payload = {
         noivoPhone: settingsNoivoPhone.replace(/\D/g, ''),
         noivaPhone: settingsNoivaPhone.replace(/\D/g, ''),
         noivoName: settingsNoivoName,
         noivaName: settingsNoivaName,
         nameOrder: settingsNameOrder,
-        pageTitle: settingsPageTitle
-      }, { headers: getApiHeaders() });
+        pageTitle: settingsPageTitle,
+        colorPrimary: settingsColorPrimary,
+        colorSecondary: settingsColorSecondary,
+        colorAccent: settingsColorAccent
+      };
+      
+      await axios.put(`${getApiUrl()}/settings`, payload, { headers: getApiHeaders() });
+      
+      // Aplica imediatamente
+      document.documentElement.style.setProperty('--color-primary', settingsColorPrimary);
+      document.documentElement.style.setProperty('--color-secondary', settingsColorSecondary);
+      document.documentElement.style.setProperty('--color-accent', settingsColorAccent);
+      
       setMessage('Configurações atualizadas com sucesso!');
       setTimeout(() => setMessage(''), 3000);
       fetchSettings();
@@ -312,6 +334,15 @@ function Dashboard() {
     } finally {
       setSavingSettings(false);
     }
+  };
+
+  const handleResetColors = () => {
+    setSettingsColorPrimary('#86A789');
+    setSettingsColorSecondary('#D2E3C6');
+    setSettingsColorAccent('#739072');
+    document.documentElement.style.setProperty('--color-primary', '#86A789');
+    document.documentElement.style.setProperty('--color-secondary', '#D2E3C6');
+    document.documentElement.style.setProperty('--color-accent', '#739072');
   };
 
   const logout = () => {
@@ -1124,9 +1155,47 @@ function Dashboard() {
                 </select>
               </div>
 
-              <button type="submit" disabled={savingSettings}>
-                {savingSettings ? <Loader2 size={18} className="spinner" /> : 'Salvar Configurações'}
-              </button>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '0.5rem' }}>
+                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+                  <label>Cor Principal:</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input type="color" value={settingsColorPrimary} onChange={e => {
+                      setSettingsColorPrimary(e.target.value);
+                      document.documentElement.style.setProperty('--color-primary', e.target.value);
+                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer' }} />
+                    <input type="text" value={settingsColorPrimary} onChange={e => setSettingsColorPrimary(e.target.value)} style={{ flex: 1 }} />
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+                  <label>Cor Secundária:</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input type="color" value={settingsColorSecondary} onChange={e => {
+                      setSettingsColorSecondary(e.target.value);
+                      document.documentElement.style.setProperty('--color-secondary', e.target.value);
+                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer' }} />
+                    <input type="text" value={settingsColorSecondary} onChange={e => setSettingsColorSecondary(e.target.value)} style={{ flex: 1 }} />
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginBottom: '0.5rem' }}>
+                  <label>Cor de Destaque:</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <input type="color" value={settingsColorAccent} onChange={e => {
+                      setSettingsColorAccent(e.target.value);
+                      document.documentElement.style.setProperty('--color-accent', e.target.value);
+                    }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer' }} />
+                    <input type="text" value={settingsColorAccent} onChange={e => setSettingsColorAccent(e.target.value)} style={{ flex: 1 }} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button type="button" onClick={handleResetColors} style={{ background: '#f1f5f9', color: '#475569', boxShadow: 'none' }}>
+                  Restaurar Cores
+                </button>
+                <button type="submit" disabled={savingSettings}>
+                  {savingSettings ? <Loader2 size={18} className="spinner" /> : 'Salvar Configurações'}
+                </button>
+              </div>
             </form>
           </div>
         </section>

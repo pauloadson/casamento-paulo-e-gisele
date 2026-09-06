@@ -35,6 +35,10 @@ function RSVP() {
         } else {
           document.title = 'Confirmação de Presença';
         }
+        
+        if (res.data.colorPrimary) document.documentElement.style.setProperty('--color-primary', res.data.colorPrimary);
+        if (res.data.colorSecondary) document.documentElement.style.setProperty('--color-secondary', res.data.colorSecondary);
+        if (res.data.colorAccent) document.documentElement.style.setProperty('--color-accent', res.data.colorAccent);
       } catch (err) {
         console.error('Erro ao buscar configurações:', err);
       } finally {
