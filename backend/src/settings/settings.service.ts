@@ -30,7 +30,7 @@ export class SettingsService {
 
     await this.systemLogs.logAction(
       'ATUALIZAR CONFIGURAÇÃO',
-      'Os números de contato dos noivos foram alterados',
+      'As configurações gerais do sistema (nomes e contatos) foram alteradas',
       'Admin'
     );
 
