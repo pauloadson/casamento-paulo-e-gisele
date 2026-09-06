@@ -1106,8 +1106,8 @@ function Dashboard() {
                   onChange={e => setSettingsNameOrder(e.target.value)}
                   style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
                 >
-                  <option value="noivo-first">Noivo primeiro (Ex: Paulo & Gisele)</option>
-                  <option value="noiva-first">Noiva primeiro (Ex: Gisele & Paulo)</option>
+                  <option value="noivo-first">Noivo primeiro</option>
+                  <option value="noiva-first">Noiva primeiro</option>
                 </select>
               </div>
 
