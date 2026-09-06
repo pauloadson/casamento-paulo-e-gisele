@@ -162,8 +162,8 @@ export default function Gifts() {
           <h2>Nossa Lista de Sugestões</h2>
           <div style={{ width: 24 }}></div>
         </div>
-        <p className="gift-modal-subtitle">
-          Sua presença é nosso maior presente! Mas se desejar nos presentear, aqui estão algumas sugestões.
+        <p className="gift-modal-subtitle" style={{ whiteSpace: 'pre-line' }}>
+          {systemSettings.giftsMessage || 'Sua presença é nosso maior presente! Mas se desejar nos presentear, aqui estão algumas sugestões.'}
         </p>
 
         <div className="gift-modal-body">

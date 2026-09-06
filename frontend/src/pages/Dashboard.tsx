@@ -69,6 +69,7 @@ function Dashboard() {
   const [settingsNoivaName, setSettingsNoivaName] = useState('');
   const [settingsNameOrder, setSettingsNameOrder] = useState('noivo-first');
   const [settingsPageTitle, setSettingsPageTitle] = useState('');
+  const [settingsGiftsMessage, setSettingsGiftsMessage] = useState('');
   const [settingsColorPrimary, setSettingsColorPrimary] = useState('');
   const [settingsColorSecondary, setSettingsColorSecondary] = useState('');
   const [settingsColorAccent, setSettingsColorAccent] = useState('');
@@ -205,6 +206,7 @@ function Dashboard() {
       setSettingsNoivaName(res.data.noivaName || '');
       setSettingsNameOrder(res.data.nameOrder || 'noivo-first');
       setSettingsPageTitle(res.data.pageTitle || '');
+      setSettingsGiftsMessage(res.data.giftsMessage || '');
       setSettingsColorPrimary(res.data.colorPrimary || '#86A789');
       setSettingsColorSecondary(res.data.colorSecondary || '#D2E3C6');
       setSettingsColorAccent(res.data.colorAccent || '#739072');
@@ -314,6 +316,7 @@ function Dashboard() {
         noivaName: settingsNoivaName,
         nameOrder: settingsNameOrder,
         pageTitle: settingsPageTitle,
+        giftsMessage: settingsGiftsMessage,
         colorPrimary: settingsColorPrimary,
         colorSecondary: settingsColorSecondary,
         colorAccent: settingsColorAccent
@@ -1140,6 +1143,16 @@ function Dashboard() {
                   placeholder="Ex: João & Maria - Casamento"
                   value={settingsPageTitle} 
                   onChange={e => setSettingsPageTitle(e.target.value)} 
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Mensagem da Lista de Presentes (Opcional):</label>
+                <textarea 
+                  placeholder="Ex: Sua presença é nosso maior presente! Mas se desejar nos presentear..."
+                  value={settingsGiftsMessage} 
+                  onChange={e => setSettingsGiftsMessage(e.target.value)}
+                  style={{ minHeight: '80px', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
                 />
               </div>
 
