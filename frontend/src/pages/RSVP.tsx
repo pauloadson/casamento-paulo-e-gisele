@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Gift } from 'lucide-react';
 import AdminShortcut from '../components/AdminShortcut';
 import './Gifts.css';
@@ -17,6 +18,23 @@ function RSVP() {
   });
   
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [systemSettings, setSystemSettings] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const apiUrl = rawUrl.replace(/\/+$/, '');
+        const res = await axios.get(`${apiUrl}/settings`, {
+          headers: { 'x-api-key': import.meta.env.VITE_API_KEY || '' }
+        });
+        setSystemSettings(res.data);
+      } catch (err) {
+        console.error('Erro ao buscar configurações:', err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const formatPhone = (val: string) => {
     let clean = val.replace(/\D/g, '');
@@ -98,7 +116,7 @@ function RSVP() {
       <AdminShortcut />
     </div>
     <div className="rsvp-container">
-      <h1>Paulo & Gisele</h1>
+      <h1>{systemSettings.noivoName || 'Paulo'} & {systemSettings.noivaName || 'Gisele'}</h1>
       <p className="subtitle">Confirme sua presença conosco!</p>
 
       {status === 'success' && (

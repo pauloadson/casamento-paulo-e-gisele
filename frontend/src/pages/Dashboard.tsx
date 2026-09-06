@@ -64,7 +64,9 @@ function Dashboard() {
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts' | 'logs' | 'settings'>('guests');
   const [settingsNoivoPhone, setSettingsNoivoPhone] = useState('');
+  const [settingsNoivoName, setSettingsNoivoName] = useState('');
   const [settingsNoivaPhone, setSettingsNoivaPhone] = useState('');
+  const [settingsNoivaName, setSettingsNoivaName] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
   const navigate = useNavigate();
 
@@ -193,7 +195,9 @@ function Dashboard() {
     try {
       const res = await axios.get(`${getApiUrl()}/settings`, { headers: getApiHeaders() });
       setSettingsNoivoPhone(res.data.noivoPhone || '');
+      setSettingsNoivoName(res.data.noivoName || '');
       setSettingsNoivaPhone(res.data.noivaPhone || '');
+      setSettingsNoivaName(res.data.noivaName || '');
     } catch (err) {
       console.error('Erro ao buscar configurações:', err);
     }
@@ -290,7 +294,9 @@ function Dashboard() {
     try {
       await axios.put(`${getApiUrl()}/settings`, {
         noivoPhone: settingsNoivoPhone.replace(/\D/g, ''),
-        noivaPhone: settingsNoivaPhone.replace(/\D/g, '')
+        noivaPhone: settingsNoivaPhone.replace(/\D/g, ''),
+        noivoName: settingsNoivoName,
+        noivaName: settingsNoivaName
       }, { headers: getApiHeaders() });
       setMessage('Configurações atualizadas com sucesso!');
       setTimeout(() => setMessage(''), 3000);
@@ -1050,24 +1056,46 @@ function Dashboard() {
             {message && <div className="alert success">{message}</div>}
             
             <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="form-group">
-                <label>Número do Noivo (WhatsApp):</label>
-                <input 
-                  type="text" 
-                  placeholder="Ex: 5562999999999"
-                  value={settingsNoivoPhone} 
-                  onChange={e => setSettingsNoivoPhone(e.target.value)} 
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label>Nome do Noivo:</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: Paulo"
+                    value={settingsNoivoName} 
+                    onChange={e => setSettingsNoivoName(e.target.value)} 
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Número do Noivo (WhatsApp):</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: 5562999999999"
+                    value={settingsNoivoPhone} 
+                    onChange={e => setSettingsNoivoPhone(e.target.value)} 
+                  />
+                </div>
               </div>
 
-              <div className="form-group">
-                <label>Número da Noiva (WhatsApp):</label>
-                <input 
-                  type="text" 
-                  placeholder="Ex: 5562999999999"
-                  value={settingsNoivaPhone} 
-                  onChange={e => setSettingsNoivaPhone(e.target.value)} 
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label>Nome da Noiva:</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: Gisele"
+                    value={settingsNoivaName} 
+                    onChange={e => setSettingsNoivaName(e.target.value)} 
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Número da Noiva (WhatsApp):</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: 5562999999999"
+                    value={settingsNoivaPhone} 
+                    onChange={e => setSettingsNoivaPhone(e.target.value)} 
+                  />
+                </div>
               </div>
 
               <button type="submit" disabled={savingSettings}>
