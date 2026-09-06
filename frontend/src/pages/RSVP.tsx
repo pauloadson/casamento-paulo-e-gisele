@@ -116,7 +116,15 @@ function RSVP() {
       <AdminShortcut />
     </div>
     <div className="rsvp-container">
-      <h1>{systemSettings.noivoName || 'Paulo'} & {systemSettings.noivaName || 'Gisele'}</h1>
+      {systemSettings.noivoName || systemSettings.noivaName ? (
+        <h1>
+          {systemSettings.noivoName} 
+          {systemSettings.noivoName && systemSettings.noivaName ? ' & ' : ''} 
+          {systemSettings.noivaName}
+        </h1>
+      ) : (
+        <h1 style={{ minHeight: '48px' }}></h1>
+      )}
       <p className="subtitle">Confirme sua presença conosco!</p>
 
       {status === 'success' && (

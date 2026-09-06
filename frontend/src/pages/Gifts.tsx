@@ -105,8 +105,8 @@ export default function Gifts() {
       alert(`O número d${contact === 'noivo' ? 'o noivo' : 'a noiva'} ainda não foi configurado no sistema.`);
       return;
     }
-    const name = contact === 'noivo' ? (systemSettings.noivoName || 'Noivo') : (systemSettings.noivaName || 'Noiva');
-    const greeting = `Olá, ${name}!`;
+    const name = contact === 'noivo' ? systemSettings.noivoName : systemSettings.noivaName;
+    const greeting = name ? `Olá, ${name}!` : 'Olá!';
     
     // Group items by category
     const groupedItems: Record<string, string[]> = {};

@@ -1061,7 +1061,6 @@ function Dashboard() {
                   <label>Nome do Noivo:</label>
                   <input 
                     type="text" 
-                    placeholder="Ex: Paulo"
                     value={settingsNoivoName} 
                     onChange={e => setSettingsNoivoName(e.target.value)} 
                   />
@@ -1082,7 +1081,6 @@ function Dashboard() {
                   <label>Nome da Noiva:</label>
                   <input 
                     type="text" 
-                    placeholder="Ex: Gisele"
                     value={settingsNoivaName} 
                     onChange={e => setSettingsNoivaName(e.target.value)} 
                   />
