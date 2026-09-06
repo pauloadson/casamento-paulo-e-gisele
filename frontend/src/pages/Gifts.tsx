@@ -25,17 +25,18 @@ export default function Gifts() {
   const [categories, setCategories] = useState<GiftCategoryData[]>([]);
   const [activeTab, setActiveTab] = useState<string>('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [systemSettings, setSystemSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchGifts = async () => {
+    const fetchData = async () => {
       try {
         const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         const apiUrl = rawUrl.replace(/\/+$/, '');
+        
+        // Busca os presentes
         const response = await axios.get<GiftCategoryData[]>(`${apiUrl}/gifts`, {
-          headers: {
-            'x-api-key': import.meta.env.VITE_API_KEY || ''
-          }
+          headers: { 'x-api-key': import.meta.env.VITE_API_KEY || '' }
         });
         
         const sortedData = response.data.map(cat => ({
@@ -50,13 +51,21 @@ export default function Gifts() {
         if (sortedData.length > 0) {
           setActiveTab(sortedData[0].name);
         }
+
+        // Busca configurações do sistema
+        try {
+          const settingsRes = await axios.get<Record<string, string>>(`${apiUrl}/settings`);
+          setSystemSettings(settingsRes.data);
+        } catch (settingsError) {
+          console.error('Erro ao buscar configurações:', settingsError);
+        }
       } catch (error) {
         console.error('Erro ao buscar lista de presentes:', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchGifts();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -89,7 +98,11 @@ export default function Gifts() {
   };
 
   const handleSendWhatsApp = (contact: 'noivo' | 'noiva') => {
-    const phone = contact === 'noivo' ? '556295132226' : '556295288086';
+    const phone = contact === 'noivo' ? (systemSettings.noivoPhone || '') : (systemSettings.noivaPhone || '');
+    if (!phone) {
+      alert(`O número d${contact === 'noivo' ? 'o noivo' : 'a noiva'} ainda não foi configurado no sistema.`);
+      return;
+    }
     const greeting = contact === 'noivo' ? 'Olá, Paulo!' : 'Olá, Gisele!';
     
     // Group items by category

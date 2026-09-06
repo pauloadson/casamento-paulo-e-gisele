@@ -71,3 +71,8 @@ model SystemLog {
   performedBy String   @default("Sistema")
   createdAt   DateTime @default(now())
 }
+model SystemSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}

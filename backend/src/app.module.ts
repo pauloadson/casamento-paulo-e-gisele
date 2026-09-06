@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { UsersService } from './users/users.service';
 import { GiftsModule } from './gifts/gifts.module';
 import { SystemLogsModule } from './system-logs/system-logs.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { SystemLogsModule } from './system-logs/system-logs.module';
     AuthModule,
     UsersModule,
     GiftsModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

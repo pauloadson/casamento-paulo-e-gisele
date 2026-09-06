@@ -62,7 +62,11 @@ function Dashboard() {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts' | 'logs'>('guests');
+  const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts' | 'logs' | 'settings'>('guests');
+  const [systemSettings, setSystemSettings] = useState<Record<string, string>>({});
+  const [settingsNoivoPhone, setSettingsNoivoPhone] = useState('');
+  const [settingsNoivaPhone, setSettingsNoivaPhone] = useState('');
+  const [savingSettings, setSavingSettings] = useState(false);
   const navigate = useNavigate();
 
   // Loading states
@@ -186,10 +190,22 @@ function Dashboard() {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const res = await axios.get(`${getApiUrl()}/settings`, { headers: getApiHeaders() });
+      setSystemSettings(res.data);
+      setSettingsNoivoPhone(res.data.noivoPhone || '');
+      setSettingsNoivaPhone(res.data.noivaPhone || '');
+    } catch (err) {
+      console.error('Erro ao buscar configurações:', err);
+    }
+  };
+
   useEffect(() => {
     fetchGuests();
     fetchGifts();
     fetchSystemLogs();
+    fetchSettings();
   }, [navigate]);
 
   useEffect(() => {
@@ -267,6 +283,24 @@ function Dashboard() {
       alert(err.response?.data?.message || 'Erro ao atualizar convidado.');
     } finally {
       setSavingGuestLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingSettings(true);
+    try {
+      await axios.put(`${getApiUrl()}/settings`, {
+        noivoPhone: settingsNoivoPhone.replace(/\D/g, ''),
+        noivaPhone: settingsNoivaPhone.replace(/\D/g, '')
+      }, { headers: getApiHeaders() });
+      setMessage('Configurações atualizadas com sucesso!');
+      setTimeout(() => setMessage(''), 3000);
+      fetchSettings();
+    } catch (err) {
+      alert('Erro ao salvar configurações.');
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -464,6 +498,15 @@ function Dashboard() {
           }}
         >
           📋 Histórico de Logs
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveTab('settings');
+            setMessage('');
+          }}
+        >
+          ⚙️ Configurações
         </button>
       </div>
 
@@ -999,6 +1042,41 @@ function Dashboard() {
               </table>
             </div>
           )}
+        </section>
+      )}
+
+      {activeTab === 'settings' && (
+        <section className="fade-in">
+          <div className="login-box" style={{ maxWidth: '600px', margin: '2rem auto' }}>
+            <h2 style={{ marginBottom: '1.5rem', textAlign: 'center' }}>Configurações do Sistema</h2>
+            {message && <div className="alert success">{message}</div>}
+            
+            <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-group">
+                <label>Número do Noivo (WhatsApp):</label>
+                <input 
+                  type="text" 
+                  placeholder="Ex: 5562999999999"
+                  value={settingsNoivoPhone} 
+                  onChange={e => setSettingsNoivoPhone(e.target.value)} 
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Número da Noiva (WhatsApp):</label>
+                <input 
+                  type="text" 
+                  placeholder="Ex: 5562999999999"
+                  value={settingsNoivaPhone} 
+                  onChange={e => setSettingsNoivaPhone(e.target.value)} 
+                />
+              </div>
+
+              <button type="submit" disabled={savingSettings}>
+                {savingSettings ? <Loader2 size={18} className="spinner" /> : 'Salvar Configurações'}
+              </button>
+            </form>
+          </div>
         </section>
       )}
 
