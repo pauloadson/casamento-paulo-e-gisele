@@ -54,7 +54,9 @@ export default function Gifts() {
 
         // Busca configurações do sistema
         try {
-          const settingsRes = await axios.get<Record<string, string>>(`${apiUrl}/settings`);
+          const settingsRes = await axios.get<Record<string, string>>(`${apiUrl}/settings`, {
+            headers: { 'x-api-key': import.meta.env.VITE_API_KEY || '' }
+          });
           setSystemSettings(settingsRes.data);
         } catch (settingsError) {
           console.error('Erro ao buscar configurações:', settingsError);
