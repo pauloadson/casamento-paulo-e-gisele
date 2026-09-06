@@ -113,6 +113,10 @@ function RSVP() {
     }
   };
 
+  const isNoivaFirst = systemSettings.nameOrder === 'noiva-first';
+  const name1 = isNoivaFirst ? systemSettings.noivaName : systemSettings.noivoName;
+  const name2 = isNoivaFirst ? systemSettings.noivoName : systemSettings.noivaName;
+
   return (
     <>
     <div style={{ textAlign: 'center', width: '100%', padding: '1rem 0 0.5rem 0', position: 'relative', zIndex: 10 }}>
@@ -121,11 +125,11 @@ function RSVP() {
     <div className="rsvp-container">
       {isLoadingSettings ? (
         <h1 style={{ minHeight: '48px' }}></h1>
-      ) : systemSettings.noivoName || systemSettings.noivaName ? (
+      ) : name1 || name2 ? (
         <h1>
-          {systemSettings.noivoName} 
-          {systemSettings.noivoName && systemSettings.noivaName ? ' & ' : ''} 
-          {systemSettings.noivaName}
+          {name1} 
+          {name1 && name2 ? ' & ' : ''} 
+          {name2}
         </h1>
       ) : (
         <h1 style={{ fontSize: '1.5rem', color: '#94a3b8' }}>

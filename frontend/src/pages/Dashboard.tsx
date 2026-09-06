@@ -67,6 +67,7 @@ function Dashboard() {
   const [settingsNoivoName, setSettingsNoivoName] = useState('');
   const [settingsNoivaPhone, setSettingsNoivaPhone] = useState('');
   const [settingsNoivaName, setSettingsNoivaName] = useState('');
+  const [settingsNameOrder, setSettingsNameOrder] = useState('noivo-first');
   const [savingSettings, setSavingSettings] = useState(false);
   const navigate = useNavigate();
 
@@ -198,6 +199,7 @@ function Dashboard() {
       setSettingsNoivoName(res.data.noivoName || '');
       setSettingsNoivaPhone(res.data.noivaPhone || '');
       setSettingsNoivaName(res.data.noivaName || '');
+      setSettingsNameOrder(res.data.nameOrder || 'noivo-first');
     } catch (err) {
       console.error('Erro ao buscar configurações:', err);
     }
@@ -296,7 +298,8 @@ function Dashboard() {
         noivoPhone: settingsNoivoPhone.replace(/\D/g, ''),
         noivaPhone: settingsNoivaPhone.replace(/\D/g, ''),
         noivoName: settingsNoivoName,
-        noivaName: settingsNoivaName
+        noivaName: settingsNoivaName,
+        nameOrder: settingsNameOrder
       }, { headers: getApiHeaders() });
       setMessage('Configurações atualizadas com sucesso!');
       setTimeout(() => setMessage(''), 3000);
@@ -1094,6 +1097,18 @@ function Dashboard() {
                     onChange={e => setSettingsNoivaPhone(e.target.value)} 
                   />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label>Ordem dos Nomes (Página Inicial):</label>
+                <select 
+                  value={settingsNameOrder} 
+                  onChange={e => setSettingsNameOrder(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
+                >
+                  <option value="noivo-first">Noivo primeiro (Ex: Paulo & Gisele)</option>
+                  <option value="noiva-first">Noiva primeiro (Ex: Gisele & Paulo)</option>
+                </select>
               </div>
 
               <button type="submit" disabled={savingSettings}>
