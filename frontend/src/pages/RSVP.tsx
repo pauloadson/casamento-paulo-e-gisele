@@ -19,6 +19,7 @@ function RSVP() {
   
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [systemSettings, setSystemSettings] = useState<Record<string, string>>({});
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -31,6 +32,8 @@ function RSVP() {
         setSystemSettings(res.data);
       } catch (err) {
         console.error('Erro ao buscar configurações:', err);
+      } finally {
+        setIsLoadingSettings(false);
       }
     };
     fetchSettings();
@@ -116,14 +119,18 @@ function RSVP() {
       <AdminShortcut />
     </div>
     <div className="rsvp-container">
-      {systemSettings.noivoName || systemSettings.noivaName ? (
+      {isLoadingSettings ? (
+        <h1 style={{ minHeight: '48px' }}></h1>
+      ) : systemSettings.noivoName || systemSettings.noivaName ? (
         <h1>
           {systemSettings.noivoName} 
           {systemSettings.noivoName && systemSettings.noivaName ? ' & ' : ''} 
           {systemSettings.noivaName}
         </h1>
       ) : (
-        <h1 style={{ minHeight: '48px' }}></h1>
+        <h1 style={{ fontSize: '1.5rem', color: '#94a3b8' }}>
+          Configure os nomes no painel
+        </h1>
       )}
       <p className="subtitle">Confirme sua presença conosco!</p>
 
