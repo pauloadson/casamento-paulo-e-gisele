@@ -186,11 +186,14 @@ function RSVP() {
         </div>
 
         <div className="form-group">
-          <label>Você poderá comparecer?</label>
+          <span className="form-group-legend" style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block', color: 'var(--color-text-main)' }}>
+            Você poderá comparecer?
+          </span>
           <div className="radio-group">
-            <label className="radio-option">
+            <label htmlFor="isConfirmed-yes" className="radio-option">
               <input 
                 type="radio" 
+                id="isConfirmed-yes"
                 name="isConfirmed" 
                 value="yes"
                 checked={formData.isConfirmed === 'yes'}
@@ -198,9 +201,10 @@ function RSVP() {
               />
               Sim, estarei lá!
             </label>
-            <label className="radio-option">
+            <label htmlFor="isConfirmed-no" className="radio-option">
               <input 
                 type="radio" 
+                id="isConfirmed-no"
                 name="isConfirmed" 
                 value="no"
                 checked={formData.isConfirmed === 'no'}

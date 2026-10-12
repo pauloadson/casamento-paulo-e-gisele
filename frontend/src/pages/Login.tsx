@@ -54,12 +54,12 @@ function Login() {
       {error && <div className="alert error">{error}</div>}
       <form onSubmit={handleLogin}>
         <div className="form-group">
-          <label>Usuário</label>
-          <input type="text" value={username} onChange={e => setUsername(e.target.value)} required />
+          <label htmlFor="login-username">Usuário</label>
+          <input id="login-username" name="username" type="text" value={username} onChange={e => setUsername(e.target.value)} required />
         </div>
         <div className="form-group">
-          <label>Senha</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+          <label htmlFor="login-password">Senha</label>
+          <input id="login-password" name="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
           <button type="submit">Entrar</button>

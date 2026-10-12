@@ -251,8 +251,10 @@ const GuestDependents: React.FC = () => {
           </p>
           <form onSubmit={handleQuickCreateDep}>
             <div className="dep-form-group">
-              <label className="dep-form-label">Nome Completo do Dependente:</label>
+              <label htmlFor="dep-quick-name" className="dep-form-label">Nome Completo do Dependente:</label>
               <input 
+                id="dep-quick-name"
+                name="quickDepName"
                 type="text" 
                 required
                 placeholder="Ex: Pedrinho (Filho)"
@@ -349,6 +351,9 @@ const GuestDependents: React.FC = () => {
           <div className="dep-search-input-wrapper">
             <Search size={18} style={{ color: 'var(--color-text-light)' }} />
             <input 
+              id="dep-search-query"
+              name="searchQuery"
+              aria-label="Buscar convidado para vincular"
               type="text"
               placeholder="Ex: Nome do cônjuge ou (11) 9999..."
               className="dep-search-input"
@@ -361,7 +366,7 @@ const GuestDependents: React.FC = () => {
           {searchQuery.trim() && (
             <div style={{ marginTop: '0.75rem', maxHeight: '200px', overflowY: 'auto' }}>
               {loadingSearch && searchResults.length === 0 && (
-                <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', textAlign: 'center', padding: '1rem' }}>Buscando no servidor...</div>
+                 <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', textAlign: 'center', padding: '1rem' }}>Buscando no servidor...</div>
               )}
               {!loadingSearch && searchResults.length === 0 && (
                 <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', textAlign: 'center', padding: '1rem' }}>Nenhum outro convidado encontrado com "{searchQuery}".</div>
@@ -408,8 +413,10 @@ const GuestDependents: React.FC = () => {
 
             <form onSubmit={handleSaveEditDep} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Nome Completo:</label>
+                <label htmlFor="edit-dep-name" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Nome Completo:</label>
                 <input 
+                  id="edit-dep-name"
+                  name="editDepName"
                   type="text" 
                   required
                   value={editDepName} 
@@ -419,8 +426,10 @@ const GuestDependents: React.FC = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Telefone / Celular (ou em branco caso seja criança):</label>
+                <label htmlFor="edit-dep-phone" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Telefone / Celular (ou em branco caso seja criança):</label>
                 <input 
+                  id="edit-dep-phone"
+                  name="editDepPhone"
                   type="text" 
                   value={editDepPhone} 
                   onChange={e => setEditDepPhone(e.target.value)}
@@ -430,8 +439,10 @@ const GuestDependents: React.FC = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Status da Confirmação:</label>
+                <label htmlFor="edit-dep-confirmed" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Status da Confirmação:</label>
                 <select
+                  id="edit-dep-confirmed"
+                  name="editDepConfirmed"
                   value={editDepConfirmed ? 'true' : 'false'}
                   onChange={e => setEditDepConfirmed(e.target.value === 'true')}
                   style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}

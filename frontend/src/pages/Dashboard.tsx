@@ -6,6 +6,7 @@ import {
   Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, User, Loader2,
   ChevronUp, ChevronDown, Minimize2, Maximize2, ArrowLeft, UserPlus, Search
 } from 'lucide-react';
+import MoneyGiftTab from '../components/MoneyGiftTab';
 import './Dashboard.css';
 
 const isTokenValid = (token: string | null) => {
@@ -27,6 +28,7 @@ interface Guest {
   phone: string | null;
   isConfirmed: boolean;
   message: string | null;
+  createdAt?: string;
   dependents?: Guest[];
   parents?: Guest[];
 }
@@ -62,7 +64,7 @@ function Dashboard() {
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts' | 'logs' | 'settings'>('guests');
+  const [activeTab, setActiveTab] = useState<'guests' | 'register' | 'gifts' | 'logs' | 'settings' | 'money'>('guests');
   const [settingsNoivoPhone, setSettingsNoivoPhone] = useState('');
   const [settingsNoivoName, setSettingsNoivoName] = useState('');
   const [settingsNoivaPhone, setSettingsNoivaPhone] = useState('');
@@ -73,6 +75,10 @@ function Dashboard() {
   const [settingsColorPrimary, setSettingsColorPrimary] = useState('');
   const [settingsColorSecondary, setSettingsColorSecondary] = useState('');
   const [settingsColorAccent, setSettingsColorAccent] = useState('');
+  const [settingsPixKey, setSettingsPixKey] = useState('');
+  const [settingsPixKeyType, setSettingsPixKeyType] = useState('random');
+  const [settingsPixRecipientName, setSettingsPixRecipientName] = useState('');
+  const [settingsPixCity, setSettingsPixCity] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
   const navigate = useNavigate();
 
@@ -85,6 +91,19 @@ function Dashboard() {
   // Search state for guests list (with debounce)
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
+  // Sort state for guests list
+  const [sortBy, setSortBy] = useState<'name' | 'createdAt'>('createdAt');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (col: 'name' | 'createdAt') => {
+    if (sortBy === col) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(col);
+      setSortDir('asc');
+    }
+  };
 
   // Guest editing modal state
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
@@ -173,15 +192,21 @@ function Dashboard() {
     }
   };
 
-  const fetchGifts = async () => {
-    setLoadingGifts(true);
+  const fetchGifts = async (showLoading = true) => {
+    if (showLoading) setLoadingGifts(true);
+    const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
     try {
       const response = await axios.get(`${getApiUrl()}/gifts`, { headers: getApiHeaders() });
       setCategories(response.data);
+      if (!showLoading) {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: scrollY, behavior: 'instant' });
+        });
+      }
     } catch (err) {
       console.error('Erro ao buscar presentes:', err);
     } finally {
-      setLoadingGifts(false);
+      if (showLoading) setLoadingGifts(false);
     }
   };
 
@@ -210,6 +235,10 @@ function Dashboard() {
       setSettingsColorPrimary(res.data.colorPrimary || '#86A789');
       setSettingsColorSecondary(res.data.colorSecondary || '#D2E3C6');
       setSettingsColorAccent(res.data.colorAccent || '#739072');
+      setSettingsPixKey(res.data.pixKey || '');
+      setSettingsPixKeyType(res.data.pixKeyType || 'random');
+      setSettingsPixRecipientName(res.data.pixRecipientName || '');
+      setSettingsPixCity(res.data.pixCity || '');
       
       // Aplica as cores localmente no painel para preview imediato se já existirem
       if (res.data.colorPrimary) document.documentElement.style.setProperty('--color-primary', res.data.colorPrimary);
@@ -319,7 +348,11 @@ function Dashboard() {
         giftsMessage: settingsGiftsMessage,
         colorPrimary: settingsColorPrimary,
         colorSecondary: settingsColorSecondary,
-        colorAccent: settingsColorAccent
+        colorAccent: settingsColorAccent,
+        pixKey: settingsPixKey,
+        pixKeyType: settingsPixKeyType,
+        pixRecipientName: settingsPixRecipientName,
+        pixCity: settingsPixCity,
       };
       
       await axios.put(`${getApiUrl()}/settings`, payload, { headers: getApiHeaders() });
@@ -398,7 +431,7 @@ function Dashboard() {
       await axios.post(`${getApiUrl()}/gifts/categories`, { name: newCatName, icon: newCatIcon }, { headers: getApiHeaders() });
       setNewCatName('');
       setIsAddingCat(false);
-      await fetchGifts();
+      await fetchGifts(false);
     } catch (err) {
       alert('Erro ao criar categoria.');
     } finally {
@@ -412,8 +445,9 @@ function Dashboard() {
     setActionLoading(`save-cat-${id}`);
     try {
       await axios.put(`${getApiUrl()}/gifts/categories/${id}`, { name: editingCatName }, { headers: getApiHeaders() });
+      setCategories(prev => prev.map(c => c.id === id ? { ...c, name: editingCatName } : c));
       setEditingCatId(null);
-      await fetchGifts();
+      await fetchGifts(false);
     } catch (err) {
       alert('Erro ao atualizar categoria.');
     } finally {
@@ -427,7 +461,8 @@ function Dashboard() {
     setActionLoading(`del-cat-${id}`);
     try {
       await axios.delete(`${getApiUrl()}/gifts/categories/${id}`, { headers: getApiHeaders() });
-      await fetchGifts();
+      setCategories(prev => prev.filter(c => c.id !== id));
+      await fetchGifts(false);
     } catch (err) {
       alert('Erro ao excluir categoria.');
     } finally {
@@ -443,7 +478,7 @@ function Dashboard() {
       await axios.post(`${getApiUrl()}/gifts/items`, { categoryId, name: newItemName }, { headers: getApiHeaders() });
       setNewItemName('');
       setAddingItemToCatId(null);
-      await fetchGifts();
+      await fetchGifts(false);
     } catch (err) {
       alert('Erro ao adicionar item.');
     } finally {
@@ -457,8 +492,12 @@ function Dashboard() {
     setActionLoading(`save-item-${id}`);
     try {
       await axios.put(`${getApiUrl()}/gifts/items/${id}`, { name: editingItemName }, { headers: getApiHeaders() });
+      setCategories(prev => prev.map(c => ({
+        ...c,
+        items: c.items.map(i => i.id === id ? { ...i, name: editingItemName } : i)
+      })));
       setEditingItemId(null);
-      await fetchGifts();
+      await fetchGifts(false);
     } catch (err) {
       alert('Erro ao atualizar item.');
     } finally {
@@ -472,7 +511,11 @@ function Dashboard() {
     setActionLoading(`del-item-${id}`);
     try {
       await axios.delete(`${getApiUrl()}/gifts/items/${id}`, { headers: getApiHeaders() });
-      await fetchGifts();
+      setCategories(prev => prev.map(c => ({
+        ...c,
+        items: c.items.filter(i => i.id !== id)
+      })));
+      await fetchGifts(false);
     } catch (err) {
       alert('Erro ao excluir item.');
     } finally {
@@ -488,9 +531,13 @@ function Dashboard() {
         isReceived,
         givenBy: isReceived ? (givenBy || null) : null
       }, { headers: getApiHeaders() });
+      setCategories(prev => prev.map(c => ({
+        ...c,
+        items: c.items.map(i => i.id === item.id ? { ...i, isReceived, givenBy: isReceived ? (givenBy || null) : null } : i)
+      })));
       setReceivingItemId(null);
       setGivenByInput('');
-      await fetchGifts();
+      await fetchGifts(false);
     } catch (err) {
       alert('Erro ao atualizar status do item.');
     } finally {
@@ -552,6 +599,12 @@ function Dashboard() {
         >
           ⚙️ Configurações
         </button>
+        <button 
+          className={`tab-button ${activeTab === 'money' ? 'active' : ''}`}
+          onClick={() => setActiveTab('money')}
+        >
+          💰 Presente em Dinheiro
+        </button>
       </div>
 
       {activeTab === 'guests' && (
@@ -559,6 +612,9 @@ function Dashboard() {
           <div className="guest-search-bar" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', backgroundColor: 'var(--color-bg-card)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
             <Search size={20} style={{ color: 'var(--color-text-light)', flexShrink: 0 }} />
             <input 
+              id="dashboard-search-guests"
+              name="searchGuests"
+              aria-label="Buscar convidado por nome ou telefone"
               type="text" 
               placeholder="Buscar convidado por nome ou telefone (filtro instantâneo no servidor)..." 
               value={searchQuery}
@@ -587,15 +643,45 @@ function Dashboard() {
               <table className="modern-table">
                 <thead>
                   <tr>
-                    <th>Nome</th>
+                    <th
+                      onClick={() => handleSort('name')}
+                      style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                      title="Ordenar por nome"
+                    >
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                        Nome
+                        <span style={{ display: 'inline-flex', flexDirection: 'column', lineHeight: 1, color: sortBy === 'name' ? 'var(--color-primary)' : 'var(--color-text-light)', fontSize: '0.7rem' }}>
+                          <span style={{ opacity: sortBy === 'name' && sortDir === 'asc' ? 1 : 0.3 }}>▲</span>
+                          <span style={{ opacity: sortBy === 'name' && sortDir === 'desc' ? 1 : 0.3 }}>▼</span>
+                        </span>
+                      </span>
+                    </th>
                     <th>Telefone</th>
                     <th>Status</th>
+                    <th
+                      onClick={() => handleSort('createdAt')}
+                      style={{ cursor: 'pointer', userSelect: 'none', whiteSpace: 'nowrap' }}
+                      title="Ordenar por data de cadastro"
+                    >
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                        Cadastro
+                        <span style={{ display: 'inline-flex', flexDirection: 'column', lineHeight: 1, color: sortBy === 'createdAt' ? 'var(--color-primary)' : 'var(--color-text-light)', fontSize: '0.7rem' }}>
+                          <span style={{ opacity: sortBy === 'createdAt' && sortDir === 'asc' ? 1 : 0.3 }}>▲</span>
+                          <span style={{ opacity: sortBy === 'createdAt' && sortDir === 'desc' ? 1 : 0.3 }}>▼</span>
+                        </span>
+                      </span>
+                    </th>
                     <th>Mensagem</th>
                     <th style={{ textAlign: 'center' }}>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {guests.map(g => (
+                  {[...guests].sort((a, b) => {
+                    const dir = sortDir === 'asc' ? 1 : -1;
+                    if (sortBy === 'name') return dir * a.name.localeCompare(b.name, 'pt-BR');
+                    if (sortBy === 'createdAt') return dir * (new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+                    return 0;
+                  }).map(g => (
                     <tr key={g.id}>
                       <td>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
@@ -622,6 +708,9 @@ function Dashboard() {
                         <span className={`badge ${g.isConfirmed ? 'confirmed' : 'pending'}`}>
                           {g.isConfirmed ? 'Confirmado' : 'Não'}
                         </span>
+                      </td>
+                      <td style={{ fontSize: '0.82rem', color: 'var(--color-text-light)', whiteSpace: 'nowrap' }}>
+                        {g.createdAt ? new Date(g.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
                       </td>
                       <td>{g.message || '-'}</td>
                       <td style={{ textAlign: 'center' }}>
@@ -665,7 +754,7 @@ function Dashboard() {
                   ))}
                   {guests.length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
+                      <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
                         Nenhum convidado encontrado.
                       </td>
                     </tr>
@@ -703,6 +792,9 @@ function Dashboard() {
                 ) : (
                   <form onSubmit={handleCreateCategory} className="inline-edit-box" style={{ maxWidth: '500px', margin: '0 0 1rem auto' }}>
                     <select 
+                      id="new-cat-icon"
+                      name="newCatIcon"
+                      aria-label="Ícone da nova categoria"
                       value={newCatIcon} 
                       onChange={e => setNewCatIcon(e.target.value)}
                       style={{ width: '130px', padding: '0.5rem' }}
@@ -716,6 +808,9 @@ function Dashboard() {
                       <option value="Box">Caixa (Geral)</option>
                     </select>
                     <input 
+                      id="new-cat-name"
+                      name="newCatName"
+                      aria-label="Nome da nova categoria"
                       type="text" 
                       placeholder="Nome da categoria..." 
                       value={newCatName} 
@@ -750,6 +845,9 @@ function Dashboard() {
                         {editingCatId === cat.id ? (
                           <div className="inline-edit-box">
                             <input 
+                              id={`edit-cat-name-${cat.id}`}
+                              name={`editCatName_${cat.id}`}
+                              aria-label="Editar nome da categoria"
                               type="text" 
                               value={editingCatName} 
                               onChange={e => setEditingCatName(e.target.value)}
@@ -830,6 +928,9 @@ function Dashboard() {
                         {addingItemToCatId === cat.id && (
                           <div className="inline-edit-box" style={{ marginBottom: '1rem', background: '#F4F8F4' }}>
                             <input 
+                              id={`new-item-name-${cat.id}`}
+                              name={`newItemName_${cat.id}`}
+                              aria-label="Nome do novo item"
                               type="text" 
                               placeholder="Nome do novo item..." 
                               value={newItemName} 
@@ -850,6 +951,9 @@ function Dashboard() {
                                 {editingItemId === item.id ? (
                                   <div className="inline-edit-box">
                                     <input 
+                                      id={`edit-item-name-${item.id}`}
+                                      name={`editItemName_${item.id}`}
+                                      aria-label="Editar nome do item"
                                       type="text" 
                                       value={editingItemName} 
                                       onChange={e => setEditingItemName(e.target.value)} 
@@ -887,6 +991,9 @@ function Dashboard() {
                                 {receivingItemId === item.id ? (
                                   <div className="inline-edit-box" style={{ minWidth: '260px' }}>
                                     <input 
+                                      id={`given-by-${item.id}`}
+                                      name={`givenBy_${item.id}`}
+                                      aria-label="Quem presenteou"
                                       type="text" 
                                       placeholder="Quem deu? (Ex: Tios...)" 
                                       value={givenByInput} 
@@ -981,12 +1088,12 @@ function Dashboard() {
           {message && <div className={`alert ${message.includes('sucesso') ? 'success' : 'error'}`}>{message}</div>}
           <form onSubmit={handleCreateUser}>
             <div className="form-group">
-              <label>Usuário</label>
-              <input type="text" value={newUsername} onChange={e => setNewUsername(e.target.value)} required />
+              <label htmlFor="admin-new-username">Usuário</label>
+              <input id="admin-new-username" name="newUsername" type="text" value={newUsername} onChange={e => setNewUsername(e.target.value)} required />
             </div>
             <div className="form-group">
-              <label>Senha</label>
-              <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+              <label htmlFor="admin-new-password">Senha</label>
+              <input id="admin-new-password" name="newPassword" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
             </div>
             <button type="submit" disabled={actionLoading === 'create-user'}>
               {actionLoading === 'create-user' ? <Loader2 size={18} className="spinner" style={{ marginRight: '8px', verticalAlign: 'middle' }} /> : null}
@@ -1098,16 +1205,20 @@ function Dashboard() {
             <form onSubmit={handleSaveSettings} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="settings-grid-2">
                 <div className="form-group">
-                  <label>Nome do Noivo:</label>
+                  <label htmlFor="settings-noivo-name">Nome do Noivo:</label>
                   <input 
+                    id="settings-noivo-name"
+                    name="settingsNoivoName"
                     type="text" 
                     value={settingsNoivoName} 
                     onChange={e => setSettingsNoivoName(e.target.value)} 
                   />
                 </div>
                 <div className="form-group">
-                  <label>Número do Noivo (WhatsApp):</label>
+                  <label htmlFor="settings-noivo-phone">Número do Noivo (WhatsApp):</label>
                   <input 
+                    id="settings-noivo-phone"
+                    name="settingsNoivoPhone"
                     type="text" 
                     placeholder="Ex: 5562999999999"
                     value={settingsNoivoPhone} 
@@ -1118,16 +1229,20 @@ function Dashboard() {
 
               <div className="settings-grid-2">
                 <div className="form-group">
-                  <label>Nome da Noiva:</label>
+                  <label htmlFor="settings-noiva-name">Nome da Noiva:</label>
                   <input 
+                    id="settings-noiva-name"
+                    name="settingsNoivaName"
                     type="text" 
                     value={settingsNoivaName} 
                     onChange={e => setSettingsNoivaName(e.target.value)} 
                   />
                 </div>
                 <div className="form-group">
-                  <label>Número da Noiva (WhatsApp):</label>
+                  <label htmlFor="settings-noiva-phone">Número da Noiva (WhatsApp):</label>
                   <input 
+                    id="settings-noiva-phone"
+                    name="settingsNoivaPhone"
                     type="text" 
                     placeholder="Ex: 5562999999999"
                     value={settingsNoivaPhone} 
@@ -1137,8 +1252,10 @@ function Dashboard() {
               </div>
 
               <div className="form-group">
-                <label>Título da Aba do Navegador (Opcional):</label>
+                <label htmlFor="settings-page-title">Título da Aba do Navegador (Opcional):</label>
                 <input 
+                  id="settings-page-title"
+                  name="settingsPageTitle"
                   type="text" 
                   placeholder="Ex: João & Maria - Casamento"
                   value={settingsPageTitle} 
@@ -1147,8 +1264,10 @@ function Dashboard() {
               </div>
 
               <div className="form-group">
-                <label>Mensagem da Lista de Presentes (Opcional):</label>
+                <label htmlFor="settings-gifts-message">Mensagem da Lista de Presentes (Opcional):</label>
                 <textarea 
+                  id="settings-gifts-message"
+                  name="settingsGiftsMessage"
                   placeholder="Ex: Sua presença é nosso maior presente! Mas se desejar nos presentear..."
                   value={settingsGiftsMessage} 
                   onChange={e => setSettingsGiftsMessage(e.target.value)}
@@ -1157,8 +1276,10 @@ function Dashboard() {
               </div>
 
               <div className="form-group">
-                <label>Ordem dos Nomes (Página Inicial):</label>
+                <label htmlFor="settings-name-order">Ordem dos Nomes (Página Inicial):</label>
                 <select 
+                  id="settings-name-order"
+                  name="settingsNameOrder"
                   value={settingsNameOrder} 
                   onChange={e => setSettingsNameOrder(e.target.value)}
                   style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
@@ -1170,33 +1291,95 @@ function Dashboard() {
 
               <div className="settings-grid-3">
                 <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <label>Cor Principal:</label>
+                  <label htmlFor="settings-color-primary">Cor Principal:</label>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <input type="color" value={settingsColorPrimary} onChange={e => {
+                    <input id="settings-color-primary" name="settingsColorPrimaryPicker" aria-label="Seletor de cor principal" type="color" value={settingsColorPrimary} onChange={e => {
                       setSettingsColorPrimary(e.target.value);
                       document.documentElement.style.setProperty('--color-primary', e.target.value);
                     }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer', flexShrink: 0 }} />
-                    <input type="text" value={settingsColorPrimary} onChange={e => setSettingsColorPrimary(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
+                    <input id="settings-color-primary-text" name="settingsColorPrimaryText" aria-label="Código hexadecimal da cor principal" type="text" value={settingsColorPrimary} onChange={e => setSettingsColorPrimary(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
                   </div>
                 </div>
                 <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <label>Cor Secundária:</label>
+                  <label htmlFor="settings-color-secondary">Cor Secundária:</label>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <input type="color" value={settingsColorSecondary} onChange={e => {
+                    <input id="settings-color-secondary" name="settingsColorSecondaryPicker" aria-label="Seletor de cor secundária" type="color" value={settingsColorSecondary} onChange={e => {
                       setSettingsColorSecondary(e.target.value);
                       document.documentElement.style.setProperty('--color-secondary', e.target.value);
                     }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer', flexShrink: 0 }} />
-                    <input type="text" value={settingsColorSecondary} onChange={e => setSettingsColorSecondary(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
+                    <input id="settings-color-secondary-text" name="settingsColorSecondaryText" aria-label="Código hexadecimal da cor secundária" type="text" value={settingsColorSecondary} onChange={e => setSettingsColorSecondary(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
                   </div>
                 </div>
                 <div className="form-group" style={{ marginBottom: '0.5rem' }}>
-                  <label>Cor de Destaque:</label>
+                  <label htmlFor="settings-color-accent">Cor de Destaque:</label>
                   <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <input type="color" value={settingsColorAccent} onChange={e => {
+                    <input id="settings-color-accent" name="settingsColorAccentPicker" aria-label="Seletor de cor de destaque" type="color" value={settingsColorAccent} onChange={e => {
                       setSettingsColorAccent(e.target.value);
                       document.documentElement.style.setProperty('--color-accent', e.target.value);
                     }} style={{ width: '50px', height: '40px', padding: '0', cursor: 'pointer', flexShrink: 0 }} />
-                    <input type="text" value={settingsColorAccent} onChange={e => setSettingsColorAccent(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
+                    <input id="settings-color-accent-text" name="settingsColorAccentText" aria-label="Código hexadecimal da cor de destaque" type="text" value={settingsColorAccent} onChange={e => setSettingsColorAccent(e.target.value)} style={{ flex: 1, minWidth: 0 }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* PIX Configuration */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.25rem', marginTop: '0.25rem' }}>
+                <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem', color: 'var(--color-primary)' }}>
+                  🔑 Configuração do PIX (Presente em Dinheiro)
+                </h3>
+                <div className="settings-grid-2">
+                  <div className="form-group">
+                    <label htmlFor="settings-pix-key-type">Tipo da Chave PIX:</label>
+                    <select
+                      id="settings-pix-key-type"
+                      name="settingsPixKeyType"
+                      value={settingsPixKeyType}
+                      onChange={e => setSettingsPixKeyType(e.target.value)}
+                      style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
+                    >
+                      <option value="cpf">🪪 CPF</option>
+                      <option value="email">📧 E-mail</option>
+                      <option value="phone">📱 Telefone</option>
+                      <option value="random">🔑 Chave Aleatória</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="settings-pix-recipient-name">Nome do Recebedor (Titular):</label>
+                    <input
+                      id="settings-pix-recipient-name"
+                      name="settingsPixRecipientName"
+                      type="text"
+                      placeholder="Ex: Paulo Adson"
+                      value={settingsPixRecipientName}
+                      onChange={e => setSettingsPixRecipientName(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="settings-grid-2">
+                  <div className="form-group">
+                    <label htmlFor="settings-pix-key">Chave PIX:</label>
+                    <input
+                      id="settings-pix-key"
+                      name="settingsPixKey"
+                      type="text"
+                      placeholder="Cole aqui sua chave PIX"
+                      value={settingsPixKey}
+                      onChange={e => setSettingsPixKey(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="settings-pix-city">Cidade da Conta PIX:</label>
+                    <input
+                      id="settings-pix-city"
+                      name="settingsPixCity"
+                      type="text"
+                      placeholder="Ex: Goiânia"
+                      value={settingsPixCity}
+                      onChange={e => setSettingsPixCity(e.target.value)}
+                    />
+                    <small style={{ fontSize: '0.78rem', color: 'var(--color-text-light)', display: 'block', marginTop: '0.25rem' }}>
+                      Cidade da sua conta bancária (obrigatório para validar o QR Code no Banco Central).
+                    </small>
                   </div>
                 </div>
               </div>
@@ -1211,6 +1394,12 @@ function Dashboard() {
               </div>
             </form>
           </div>
+        </section>
+      )}
+
+      {activeTab === 'money' && (
+        <section className="fade-in">
+          <MoneyGiftTab getApiUrl={getApiUrl} getApiHeaders={getApiHeaders} />
         </section>
       )}
 
@@ -1236,8 +1425,10 @@ function Dashboard() {
 
           <form onSubmit={handleSaveEditGuest} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Nome Completo:</label>
+              <label htmlFor="edit-guest-name" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Nome Completo:</label>
               <input 
+                id="edit-guest-name"
+                name="editGuestName"
                 type="text" 
                 required
                 value={editGuestName} 
@@ -1247,8 +1438,10 @@ function Dashboard() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Telefone / Celular (ou em branco caso seja criança):</label>
+              <label htmlFor="edit-guest-phone" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Telefone / Celular (ou em branco caso seja criança):</label>
               <input 
+                id="edit-guest-phone"
+                name="editGuestPhone"
                 type="text" 
                 value={editGuestPhone} 
                 onChange={e => setEditGuestPhone(e.target.value)}
@@ -1258,8 +1451,10 @@ function Dashboard() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Status da Confirmação:</label>
+              <label htmlFor="edit-guest-confirmed" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Status da Confirmação:</label>
               <select
+                id="edit-guest-confirmed"
+                name="editGuestConfirmed"
                 value={editGuestConfirmed ? 'true' : 'false'}
                 onChange={e => setEditGuestConfirmed(e.target.value === 'true')}
                 style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
@@ -1270,8 +1465,10 @@ function Dashboard() {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Mensagem para os Noivos (Opcional):</label>
+              <label htmlFor="edit-guest-message" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--color-text)' }}>Mensagem para os Noivos (Opcional):</label>
               <textarea 
+                id="edit-guest-message"
+                name="editGuestMessage"
                 rows={3}
                 value={editGuestMessage} 
                 onChange={e => setEditGuestMessage(e.target.value)}

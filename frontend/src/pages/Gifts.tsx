@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, MessageCircle, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, MessageCircle, Loader2, Check, Banknote } from 'lucide-react';
 import './Gifts.css';
 
 interface GiftItemData {
@@ -79,10 +79,18 @@ export default function Gifts() {
     fetchData();
   }, []);
 
+  const handleBack = () => {
+    if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        navigate('/');
+        handleBack();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -154,7 +162,7 @@ export default function Gifts() {
         <div className="gift-modal-header">
           <button 
             className="close-button" 
-            onClick={() => navigate('/')}
+            onClick={handleBack}
             aria-label="Voltar"
           >
             <ArrowLeft size={24} />
@@ -185,6 +193,16 @@ export default function Gifts() {
                     <span>{cat.name}</span>
                   </button>
                 ))}
+                {Boolean(systemSettings.pixKey && systemSettings.pixKey.trim()) && (
+                  <button
+                    type="button"
+                    className="category-tab"
+                    onClick={() => navigate('/presente-em-dinheiro')}
+                  >
+                    <Banknote size={20} />
+                    <span>Dinheiro</span>
+                  </button>
+                )}
               </div>
 
               <div className="gift-items-container">
