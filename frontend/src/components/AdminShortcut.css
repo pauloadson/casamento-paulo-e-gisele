@@ -1,8 +1,8 @@
 /* Floating Admin Button */
 .admin-shortcut-floating {
   position: fixed;
-  bottom: 2rem;
-  left: 2rem;
+  bottom: calc(2rem + 66px);
+  right: 2rem;
   z-index: 1050;
   width: 52px;
   height: 52px;
@@ -52,8 +52,8 @@
 
 @media (max-width: 768px) {
   .admin-shortcut-floating {
-    bottom: 1.25rem;
-    left: 1.25rem;
+    bottom: calc(1.5rem + 62px);
+    right: 1.5rem;
     width: 48px;
     height: 48px;
     min-width: 48px;
