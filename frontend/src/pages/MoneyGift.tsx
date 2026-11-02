@@ -12,7 +12,9 @@ import {
   Smartphone,
   Gift,
   XCircle,
+  ClipboardCheck,
 } from "lucide-react";
+import AdminShortcut from "../components/AdminShortcut";
 import AlertModal from "../components/AlertModal";
 import { generatePixPayload } from "../utils/pix";
 import "./MoneyGift.css";
@@ -135,7 +137,7 @@ export default function MoneyGift() {
     ) {
       navigate(-1);
     } else {
-      navigate("/");
+      navigate("/rsvp");
     }
   };
 
@@ -347,6 +349,9 @@ export default function MoneyGift() {
   if (step === "qrcode") {
     return (
       <div className="gifts-page">
+        <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1100 }}>
+          <AdminShortcut />
+        </div>
         <div className="money-gift-content money-gift-qr fade-in">
           <div className="gift-modal-header">
             <button
@@ -576,6 +581,9 @@ export default function MoneyGift() {
 
   return (
     <div className="gifts-page">
+      <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1100 }}>
+        <AdminShortcut />
+      </div>
       <div className="money-gift-content fade-in">
         {/* Header - Voltar inteligente */}
         <div className="gift-modal-header">
@@ -721,14 +729,25 @@ export default function MoneyGift() {
         </div>
       </div>
 
-      {/* Botão flutuante redondo para ir aos presentes */}
-      <button
-        className="floating-gift-button floating-gift-round"
-        onClick={() => navigate("/presentes")}
-        aria-label="Abrir Lista de Presentes"
-      >
-        <Gift className="gift-icon" />
-      </button>
+      {/* Botões flutuantes para Lista de Presentes e Confirmação de Presença */}
+      <div className="floating-actions-container">
+        <button
+          className="floating-gift-button floating-gift-round"
+          onClick={() => navigate("/rsvp")}
+          aria-label="Confirmar Presença"
+          title="Confirmar Presença"
+        >
+          <ClipboardCheck className="gift-icon" />
+        </button>
+        <button
+          className="floating-gift-button floating-gift-round"
+          onClick={() => navigate("/presentes")}
+          aria-label="Abrir Lista de Presentes"
+          title="Abrir Lista de Presentes"
+        >
+          <Gift className="gift-icon" />
+        </button>
+      </div>
 
       <AlertModal
         isOpen={modalState.isOpen}
