@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Gift, Banknote } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import AdminShortcut from '../components/AdminShortcut';
 import './Gifts.css';
 
@@ -232,28 +232,16 @@ function RSVP() {
       </form>
     </div>
     
-    <div className="floating-actions-container">
-      {Boolean(systemSettings.pixKey && systemSettings.pixKey.trim()) && (
-        <button 
-          className="floating-gift-button floating-gift-round money-btn"
-          onClick={() => navigate('/presente-em-dinheiro')}
-          aria-label="Presente em Dinheiro / PIX"
-          title="Presente em Dinheiro / PIX"
-        >
-          <Banknote className="gift-icon" />
-        </button>
-      )}
-      <button 
-        className="floating-gift-button"
-        onClick={() => navigate('/presentes')}
-        aria-label="Abrir Lista de Presentes"
-      >
-        <Gift className="gift-icon" />
-        <span className="gift-text">
-          Lista de <br className="mobile-break" /> Presentes
-        </span>
-      </button>
-    </div>
+    <button 
+      className="floating-gift-button"
+      onClick={() => navigate('/presentes')}
+      aria-label="Abrir Lista de Presentes"
+    >
+      <Gift className="gift-icon" />
+      <span className="gift-text">
+        Lista de <br className="mobile-break" /> Presentes
+      </span>
+    </button>
     </>
   );
 }

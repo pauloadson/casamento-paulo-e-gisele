@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, MessageCircle, Loader2, Check, Banknote, ClipboardCheck } from 'lucide-react';
-import AdminShortcut from '../components/AdminShortcut';
+import { ArrowLeft, Utensils, Coffee, Tv, BedDouble, Bath, WashingMachine, Box, MessageCircle, Loader2, Check, Banknote } from 'lucide-react';
 import './Gifts.css';
 
 interface GiftItemData {
@@ -159,9 +158,6 @@ export default function Gifts() {
 
   return (
     <div className="gifts-page" style={{ flexDirection: 'column', padding: '1rem' }}>
-      <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 1100 }}>
-        <AdminShortcut />
-      </div>
       <div className="gift-modal-content" onClick={e => e.stopPropagation()}>
         <div className="gift-modal-header">
           <button 
@@ -255,17 +251,6 @@ export default function Gifts() {
             </div>
           </div>
         )}
-      </div>
-
-      <div className="floating-actions-container">
-        <button
-          className="floating-gift-button floating-gift-round"
-          onClick={() => navigate('/rsvp')}
-          aria-label="Confirmar Presença"
-          title="Confirmar Presença"
-        >
-          <ClipboardCheck className="gift-icon" />
-        </button>
       </div>
     </div>
   );
