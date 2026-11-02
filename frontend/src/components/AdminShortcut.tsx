@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import './AdminShortcut.css';
@@ -19,33 +18,29 @@ const isTokenValid = (token: string | null) => {
 export default function AdminShortcut() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [hasValidToken, setHasValidToken] = useState(false);
 
-  useEffect(() => {
-    const checkToken = () => {
-      const token = localStorage.getItem('token');
-      setHasValidToken(isTokenValid(token));
-    };
-
-    checkToken();
-    window.addEventListener('storage', checkToken);
-    return () => window.removeEventListener('storage', checkToken);
-  }, [location.pathname]);
-
-  // Se já estivermos no painel de admin ou na tela de login, ou se não houver voucher (token) válido, NÃO exibe nada
-  if (location.pathname === '/admin' || location.pathname === '/login' || !hasValidToken) {
+  // Não exibe se já estivermos na tela de login ou em qualquer rota do painel admin
+  if (location.pathname === '/login' || location.pathname.startsWith('/admin')) {
     return null;
   }
 
+  const handleClick = () => {
+    const token = localStorage.getItem('token');
+    if (isTokenValid(token)) {
+      navigate('/admin');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <button 
-      className="admin-shortcut-btn"
-      onClick={() => navigate('/admin')}
-      title="Ir para o Painel de Controle"
+      className="admin-shortcut-floating"
+      onClick={handleClick}
+      title="Painel de Controle (Admin)"
       aria-label="Painel de Controle do Admin"
     >
       <ShieldCheck className="admin-shortcut-icon" />
-      <span className="admin-shortcut-text">Painel Admin</span>
     </button>
   );
 }

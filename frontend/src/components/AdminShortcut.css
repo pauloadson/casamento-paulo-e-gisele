@@ -1,41 +1,66 @@
-.admin-shortcut-btn {
+/* Floating Admin Button */
+.admin-shortcut-floating {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 1050;
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  min-height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  color: #ffffff;
+  border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  padding: 0.5rem 1.1rem;
-  border-radius: 50px;
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  font-weight: 600;
   cursor: pointer;
-  margin: 0 auto 1rem auto;
-  box-shadow: 0 4px 12px rgba(134, 167, 137, 0.3);
-  transition: all 0.2s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  padding: 0;
+  margin: 0;
   animation: fadeInAdmin 0.3s ease-out;
 }
 
-.admin-shortcut-btn:hover {
-  background: #6a886d;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(134, 167, 137, 0.4);
+.admin-shortcut-floating:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.28);
 }
 
-.admin-shortcut-icon {
-  width: 16px;
-  height: 16px;
+.admin-shortcut-floating .admin-shortcut-icon {
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   transition: transform 0.3s ease;
 }
 
-.admin-shortcut-btn:hover .admin-shortcut-icon {
-  transform: rotate(360deg);
+.admin-shortcut-floating:hover .admin-shortcut-icon {
+  transform: rotate(20deg);
 }
 
 @keyframes fadeInAdmin {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-shortcut-floating {
+    bottom: 1.25rem;
+    left: 1.25rem;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+  .admin-shortcut-floating .admin-shortcut-icon {
+    width: 22px;
+    height: 22px;
+  }
 }

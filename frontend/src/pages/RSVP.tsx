@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Gift } from 'lucide-react';
-import AdminShortcut from '../components/AdminShortcut';
 import './Gifts.css';
 
 function RSVP() {
@@ -128,9 +127,6 @@ function RSVP() {
 
   return (
     <>
-    <div style={{ textAlign: 'center', width: '100%', padding: '1rem 0 0.5rem 0', position: 'relative', zIndex: 10 }}>
-      <AdminShortcut />
-    </div>
     <div className="rsvp-container">
       {isLoadingSettings ? (
         <h1 style={{ minHeight: '48px' }}></h1>
