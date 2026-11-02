@@ -10,7 +10,7 @@ import MoneyGift from './pages/MoneyGift';
 
 function HomePage() {
   const [mainPage, setMainPage] = useState<string>(() => {
-    return localStorage.getItem('cachedMainPage') || 'money';
+    return localStorage.getItem('cachedMainPage') || 'rsvp';
   });
 
   useEffect(() => {
@@ -21,7 +21,7 @@ function HomePage() {
         const res = await axios.get<Record<string, string>>(`${apiUrl}/settings`, {
           headers: { 'x-api-key': import.meta.env.VITE_API_KEY || '' }
         });
-        const configured = res.data.mainPage || 'money';
+        const configured = res.data.mainPage || 'rsvp';
         setMainPage(configured);
         localStorage.setItem('cachedMainPage', configured);
       } catch (err) {
@@ -35,11 +35,11 @@ function HomePage() {
     return <Gifts />;
   }
 
-  if (mainPage === 'rsvp') {
-    return <RSVP />;
+  if (mainPage === 'money') {
+    return <MoneyGift />;
   }
 
-  return <MoneyGift />;
+  return <RSVP />;
 }
 
 function App() {

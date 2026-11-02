@@ -70,7 +70,7 @@ function Dashboard() {
   const [settingsNoivaPhone, setSettingsNoivaPhone] = useState('');
   const [settingsNoivaName, setSettingsNoivaName] = useState('');
   const [settingsNameOrder, setSettingsNameOrder] = useState('noivo-first');
-  const [settingsMainPage, setSettingsMainPage] = useState('money');
+  const [settingsMainPage, setSettingsMainPage] = useState('rsvp');
   const [settingsPageTitle, setSettingsPageTitle] = useState('');
   const [settingsGiftsMessage, setSettingsGiftsMessage] = useState('');
   const [settingsColorPrimary, setSettingsColorPrimary] = useState('');
@@ -231,7 +231,7 @@ function Dashboard() {
       setSettingsNoivaPhone(res.data.noivaPhone || '');
       setSettingsNoivaName(res.data.noivaName || '');
       setSettingsNameOrder(res.data.nameOrder || 'noivo-first');
-      setSettingsMainPage(res.data.mainPage || 'money');
+      setSettingsMainPage(res.data.mainPage || 'rsvp');
       setSettingsPageTitle(res.data.pageTitle || '');
       setSettingsGiftsMessage(res.data.giftsMessage || '');
       setSettingsColorPrimary(res.data.colorPrimary || '#86A789');
@@ -1265,8 +1265,8 @@ function Dashboard() {
                   onChange={e => setSettingsMainPage(e.target.value)}
                   style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', fontSize: '0.95rem', background: '#fff' }}
                 >
+                  <option value="rsvp">Formulário de Confirmação de Presença (Padrão)</option>
                   <option value="money">Presente em Dinheiro / PIX (/presente-em-dinheiro)</option>
-                  <option value="rsvp">Formulário de Confirmação de Presença (/)</option>
                   <option value="gifts">Lista de Sugestões de Presentes (/presentes)</option>
                 </select>
                 <small style={{ fontSize: '0.78rem', color: 'var(--color-text-light)', display: 'block', marginTop: '0.25rem' }}>
