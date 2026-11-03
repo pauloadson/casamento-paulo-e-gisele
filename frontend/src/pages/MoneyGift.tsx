@@ -128,15 +128,7 @@ export default function MoneyGift() {
   }, []);
 
   const handleBack = () => {
-    if (
-      window.history.state &&
-      typeof window.history.state.idx === "number" &&
-      window.history.state.idx > 0
-    ) {
-      navigate(-1);
-    } else {
-      navigate("/");
-    }
+    navigate("/");
   };
 
   useEffect(() => {
@@ -724,7 +716,7 @@ export default function MoneyGift() {
       {/* Botão flutuante redondo para ir aos presentes */}
       <button
         className="floating-gift-button floating-gift-round"
-        onClick={() => navigate("/presentes")}
+        onClick={() => navigate("/presentes", { replace: true })}
         aria-label="Abrir Lista de Presentes"
       >
         <Gift className="gift-icon" />

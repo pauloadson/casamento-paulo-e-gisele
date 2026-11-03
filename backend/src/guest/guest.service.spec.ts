@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GuestService } from './guest.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { SystemLogsService } from '../system-logs/system-logs.service';
 
 describe('GuestService', () => {
   let service: GuestService;
@@ -12,6 +13,10 @@ describe('GuestService', () => {
         {
           provide: PrismaService,
           useValue: {},
+        },
+        {
+          provide: SystemLogsService,
+          useValue: { logAction: jest.fn() },
         },
       ],
     }).compile();

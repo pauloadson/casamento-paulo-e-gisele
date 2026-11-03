@@ -80,11 +80,7 @@ export default function Gifts() {
   }, []);
 
   const handleBack = () => {
-    if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
-      navigate(-1);
-    } else {
-      navigate('/');
-    }
+    navigate('/');
   };
 
   useEffect(() => {
@@ -197,7 +193,7 @@ export default function Gifts() {
                   <button
                     type="button"
                     className="category-tab"
-                    onClick={() => navigate('/presente-em-dinheiro')}
+                    onClick={() => navigate('/presente-em-dinheiro', { replace: true })}
                   >
                     <Banknote size={20} />
                     <span>Dinheiro</span>
